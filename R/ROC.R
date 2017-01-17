@@ -1,0 +1,302 @@
+
+
+#' calculate AUC.
+#'
+#' Based on:
+#'  http://blog.revolutionanalytics.com/2016/08/roc-curves-in-two-lines-of-code.html
+#'
+#'  See also https://github.com/WinVector/sigr
+#'
+#' @param modelPredictions numeric predictions (not empty)
+#' @param yValues logical truth (not empty, same lenght as model predictions)
+#' @return line graph, point graph, and area under curve
+#'
+calcAUC <- function(modelPredictions,yValues) {
+  ord <- order(modelPredictions, decreasing=TRUE)
+  yValues <- yValues[ord]
+  modelPredictions <- modelPredictions[ord]
+  # FPR is the x-axis, TPR the y.
+  x <- cumsum(!yValues)/max(1,sum(!yValues)) # FPR = x-axis
+  y <- cumsum(yValues)/max(1,sum(yValues))   # TPR = y-axis
+  # each point should be fully after a bunch of points or fully before a
+  # decision level. remove dups to achieve this.
+  dup <- c(modelPredictions[-1]>=modelPredictions[-length(modelPredictions)],
+           FALSE)
+  # And add in ideal endpoints just in case (redundancy here is not a problem).
+  x <- x[!dup]
+  y <- y[!dup]
+  pointGraph <- data.frame(FalsePositiveRate=x,TruePositiveRate=y,
+                           stringsAsFactors = FALSE)
+  x <- c(0,x,1)
+  y <- c(0,y,1)
+  lineGraph <- data.frame(FalsePositiveRate=x,TruePositiveRate=y,
+                          stringsAsFactors = FALSE)
+  # sum areas of segments (triangle topped vertical rectangles)
+  n <- length(y)
+  area <- sum( ((y[-1]+y[-n])/2) * (x[-1]-x[-n]) )
+  list(lineGraph=lineGraph,pointGraph=pointGraph,area=area)
+}
+
+#' Plot receiver operating characteristic plot.
+#'
+#' @param frame data frame to get values from
+#' @param xvar name of the independent (input or model) column in frame
+#' @param truthVar name of the dependent (output or result to be modeled) column in frame
+#' @param truthTarget value we consider to be positive
+#' @param title title to place on plot
+#' @param ...  no unnamed argument, added to force named binding of later arguments.
+#' @param returnScores logical if TRUE return detailed permutedScores
+#' @param nrep number of permutation repititions to estimate p values.
+#' @param parallelCluster (optional) a cluster object created by package parallel or package snow.
+#'
+#' @examples
+#'
+#' set.seed(34903490)
+#' x = rnorm(50)
+#' y = 0.5*x^2 + 2*x + rnorm(length(x))
+#' frm = data.frame(x=x,yC=y>=as.numeric(quantile(y,probs=0.8)))
+#' WVPlots::ROCPlot(frm, "x", "yC", TRUE, title="Example ROC plot")
+#'
+#' @export
+ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
+                    ...,
+                    returnScores=FALSE,
+                    nrep=100,
+                    parallelCluster=NULL) {
+  checkArgs(frame=frame,xvar=xvar,yvar=truthVar,title=title,...)
+  outcol <- frame[[truthVar]]==truthTarget
+  if(length(unique(outcol))!=2) {
+    return(NULL)
+  }
+  predcol <- frame[[xvar]]
+  rocList <- calcAUC(predcol,outcol)
+  auc <- rocList$area
+  aucsig <- sigr::permutationScoreModel(modelValues=predcol,
+                                        yValues=outcol,
+                                        scoreFn=sigr::calcAUC,
+                                        returnScores=returnScores,
+                                        nRep=nrep,
+                                        parallelCluster=parallelCluster)
+
+  palletName = "Dark2"
+  pString <- sigr::render(sigr::wrapSignificance(aucsig$pValue),format='ascii')
+  aucString <- sprintf('%.2g',auc)
+  plot= ggplot2::ggplot() +
+    ggplot2::geom_ribbon(data=rocList$lineGraph,
+                         ggplot2::aes_string(x='FalsePositiveRate',
+                                             ymax='TruePositiveRate',ymin=0),
+                         alpha=0.2,color=NA) +
+    ggplot2::geom_point(data=rocList$pointGraph,
+                        ggplot2::aes_string(x='FalsePositiveRate',
+                                            y='TruePositiveRate'),
+                        color='darkblue',alpha=0.5) +
+    ggplot2::geom_line(data=rocList$lineGraph,
+                       ggplot2::aes_string(x='FalsePositiveRate',
+                                           y='TruePositiveRate'),
+                       color='darkblue') +
+    ggplot2::geom_abline(slope=1,intercept=0) +
+    ggplot2::coord_fixed() +
+    ggplot2::scale_fill_brewer(palette=palletName) +
+    ggplot2::scale_color_brewer(palette=palletName) +
+    ggplot2::ggtitle(paste0(title,'\n',
+                            truthVar, '==', truthTarget, ' ~ ', xvar, ', ',
+                            'AUC=',aucString,
+                            '\nalt. hyp.: AUC(',xvar,')>permuted AUC, ',
+                            pString)) +
+    ggplot2::ylim(0,1) + ggplot2::xlim(0,1)
+  if(returnScores) {
+    return(list(plot=plot,rocList=rocList,aucsig=aucsig,pString=pString))
+  }
+  plot
+}
+
+
+
+#' Plot two receiver operating characteristic from the same data.frame.
+#'
+#' @param frame data frame to get values from
+#' @param xvar1 name of the first independent (input or model) column in frame
+#' @param xvar2 name of the second independent (input or model) column in frame
+#' @param truthVar name of the dependent (output or result to be modeled) column in frame
+#' @param truthTarget value we consider to be positive
+#' @param title title to place on plot
+#' @param ...  no unnamed argument, added to force named binding of later arguments.
+#' @param returnScores logical if TRUE return detailed permutedScores
+#' @param nrep number of permutation repititions to estimate p values.
+#' @param parallelCluster (optional) a cluster object created by package parallel or package snow.
+#' @examples
+#'
+#' set.seed(34903490)
+#' x1 = rnorm(50)
+#' x2 = rnorm(length(x1))
+#' y = 0.2*x2^2 + 0.5*x2 + x1 + rnorm(length(x1))
+#' frm = data.frame(x1=x1,x2=x2,yC=y>=as.numeric(quantile(y,probs=0.8)))
+#' # WVPlots::ROCPlot(frm, "x1", "yC", TRUE, title="Example ROC plot")
+#' # WVPlots::ROCPlot(frm, "x2", "yC", TRUE, title="Example ROC plot")
+#' WVPlots::ROCPlotPair(frm, "x1", "x2", "yC", TRUE,
+#'    title="Example ROC pair plot")
+#'
+#' @export
+ROCPlotPair <- function(frame, xvar1, xvar2, truthVar, truthTarget, title,
+                        ...,
+                        returnScores=FALSE,
+                        nrep=100,
+                        parallelCluster=NULL) {
+  checkArgs(frame=frame,xvar=xvar1,yvar=truthVar,title=title,...)
+  checkArgs(frame=frame,xvar=xvar2,yvar=truthVar,title=title,...)
+  outcol <- frame[[truthVar]]==truthTarget
+  if(length(unique(outcol))!=2) {
+    return(NULL)
+  }
+  rocList1 <- calcAUC(frame[[xvar1]],outcol)
+  rocList2 <- calcAUC(frame[[xvar2]],outcol)
+
+  aucsig <- sigr::resampleScoreModelPair(frame[[xvar1]],
+                                         frame[[xvar2]],
+                                         frame[[truthVar]]==truthTarget,
+                                         scoreFn=sigr::calcAUC,
+                                         returnScores=returnScores,
+                                         nRep=nrep,
+                                         parallelCluster=parallelCluster)
+  eString <- sigr::render(sigr::wrapSignificance(aucsig$eValue,symbol = 'e'),
+                          format='ascii',
+                          pLargeCutoff=2.0)
+  nm1 <- paste0('1: ',xvar1,', AUC=',sprintf('%.2g',aucsig$observedScore1))
+  nm2 <- paste0('2: ',xvar2,', AUC=',sprintf('%.2g',aucsig$observedScore2))
+  rocList1$pointGraph$model <- nm1
+  rocList1$lineGraph$model <- nm1
+  rocList2$pointGraph$model <- nm2
+  rocList2$lineGraph$model <- nm2
+  pointGraph <- rbind(rocList1$pointGraph,rocList2$pointGraph)
+  lineGraph <- rbind(rocList1$lineGraph,rocList2$lineGraph)
+  palletName = "Dark2"
+  plot= ggplot2::ggplot() +
+    ggplot2::geom_point(data=pointGraph,
+                        ggplot2::aes_string(x='FalsePositiveRate',
+                                            y='TruePositiveRate',
+                                     color='model',shape='model'),
+                        alpha=0.5) +
+    ggplot2::geom_line(data=lineGraph,
+                       ggplot2::aes_string(x='FalsePositiveRate',
+                                           y='TruePositiveRate',
+                                    color='model',linetype='model')) +
+    ggplot2::geom_abline(slope=1,intercept=0,color='gray') +
+    ggplot2::coord_fixed() +
+    ggplot2::scale_fill_brewer(palette=palletName) +
+    ggplot2::scale_color_brewer(palette=palletName) +
+    ggplot2::ggtitle(paste0(title,'\n',
+                  truthVar, '==', truthTarget, ' ~ model\n',
+                  'testing: AUC(',xvar1,')>AUC(',xvar2,') ',
+                  eString)) +
+    ggplot2::ylim(0,1) + ggplot2::xlim(0,1) +
+    ggplot2::theme(legend.position="bottom")
+  if(returnScores) {
+    return(list(plot=plot,
+                rocList1=rocList1,rocList2=rocList2,
+                aucsig=aucsig,eString=eString))
+  }
+  plot
+}
+
+
+#' Plot two receiver operating characteristic plots from unrelated frames.
+#'
+#' @param nm1 name of first model
+#' @param frame1 data frame to get values from
+#' @param xvar1 name of the first independent (input or model) column in frame
+#' @param truthVar1 name of the dependent (output or result to be modeled) column in frame
+#' @param truthTarget1 value we consider to be positive
+#' @param nm2 name of second model
+#' @param frame2 data frame to get values from
+#' @param xvar2 name of the first independent (input or model) column in frame
+#' @param truthVar2 name of the dependent (output or result to be modeled) column in frame
+#' @param truthTarget2 value we consider to be positive
+#' @param title title to place on plot
+#' @param ...  no unnamed argument, added to force named binding of later arguments.
+#' @param returnScores logical if TRUE return detailed permutedScores
+#' @param nrep number of permutation repititions to estimate p values.
+#' @param parallelCluster (optional) a cluster object created by package parallel or package snow.
+#' @examples
+#'
+#' set.seed(34903490)
+#' x1 = rnorm(50)
+#' x2 = rnorm(length(x1))
+#' y = 0.2*x2^2 + 0.5*x2 + x1 + rnorm(length(x1))
+#' frm = data.frame(x1=x1,x2=x2,yC=y>=as.numeric(quantile(y,probs=0.8)))
+#' # WVPlots::ROCPlot(frm, "x1", "yC", TRUE, title="Example ROC plot")
+#' # WVPlots::ROCPlot(frm, "x2", "yC", TRUE, title="Example ROC plot")
+#' WVPlots::ROCPlotPair2('train',frm, "x1", "yC", TRUE,
+#'                       'test', frm, "x2", "yC", TRUE,
+#'                       title="Example ROC pair plot")
+#'
+#' @export
+ROCPlotPair2 <- function(nm1, frame1, xvar1, truthVar1, truthTarget1,
+                         nm2, frame2, xvar2, truthVar2, truthTarget2,
+                         title,
+                         ...,
+                         returnScores=FALSE,
+                         nrep=100,
+                         parallelCluster=NULL) {
+  checkArgs(frame=frame1,xvar=xvar1,yvar=truthVar1,title=title,...)
+  checkArgs(frame=frame2,xvar=xvar2,yvar=truthVar2,title=title,...)
+  test <- NULL # used as a symbol, declare not an unbound variable
+  outcol1 <- frame1[[truthVar1]]==truthTarget1
+  if(length(unique(outcol1))!=2) {
+    return(NULL)
+  }
+  outcol2 <- frame2[[truthVar2]]==truthTarget2
+  if(length(unique(outcol2))!=2) {
+    return(NULL)
+  }
+  rocList1 <- calcAUC(frame1[[xvar1]],outcol1)
+  rocList2 <- calcAUC(frame2[[xvar2]],outcol2)
+
+  d1 <- sigr::resampleTestAUC(frame1,xvar1,truthVar1,truthTarget1,
+                                nrep=nrep,returnScores = TRUE)
+  d2 <- sigr::resampleTestAUC(frame2,xvar2,truthVar2,truthTarget2,
+                                nrep=nrep,returnScores = TRUE)
+  aucsig <- sigr::estimateDifferenceZeroCrossing(d1$eScore$resampledScores -
+                                                 d2$eScore$resampledScores)
+  eString <- paste("testing:",aucsig$test,
+                   sigr::render(sigr::wrapSignificance(aucsig$eValue,symbol='e'),
+                                            format='ascii',
+                                            pLargeCutoff=0.5))
+  nm1 <- paste0('1: ',nm1,' ',xvar1,', AUC=',sprintf('%.2g',rocList1$area))
+  nm2 <- paste0('2: ',nm2,' ',xvar2,', AUC=',sprintf('%.2g',rocList2$area))
+  rocList1$pointGraph$model <- nm1
+  rocList1$lineGraph$model <- nm1
+  rocList2$pointGraph$model <- nm2
+  rocList2$lineGraph$model <- nm2
+  pointGraph <- rbind(rocList1$pointGraph,rocList2$pointGraph)
+  lineGraph <- rbind(rocList1$lineGraph,rocList2$lineGraph)
+  palletName = "Dark2"
+  plot= ggplot2::ggplot() +
+    ggplot2::geom_point(data=pointGraph,
+                        ggplot2::aes_string(x='FalsePositiveRate',
+                                            y='TruePositiveRate',
+                                            color='model',shape='model'),
+                        alpha=0.5) +
+    ggplot2::geom_line(data=lineGraph,
+                       ggplot2::aes_string(x='FalsePositiveRate',
+                                           y='TruePositiveRate',
+                                           color='model',linetype='model')) +
+    ggplot2::geom_abline(slope=1,intercept=0,color='gray') +
+    ggplot2::coord_fixed() +
+    ggplot2::scale_fill_brewer(palette=palletName) +
+    ggplot2::scale_color_brewer(palette=palletName) +
+    ggplot2::ggtitle(paste0(title,'\n',
+                            'testing: AUC(1)>AUC(2)\n',
+                            eString)) +
+    ggplot2::ylim(0,1) + ggplot2::xlim(0,1) +
+    ggplot2::theme(legend.position="bottom")
+  if(returnScores) {
+    return(list(plot=plot,
+                rocList1=rocList1,rocList2=rocList2,
+                d1=d1,d2=d2,
+                test=test,
+                aucsig=aucsig,
+                eString=eString))
+  }
+  plot
+}
+
