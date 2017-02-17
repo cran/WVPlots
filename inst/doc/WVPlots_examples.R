@@ -33,8 +33,8 @@ frmScatterHistN$z <- frmScatterHistN$x+frmScatterHistN$y
 WVPlots::ScatterHistN(frmScatterHistN, "x", "y", "z", title="Example Joint Distribution")
 
 ## ------------------------------------------------------------------------
-WVPlots::BinaryYScatterPlot(frm, "x", "posY", 
-                            title="Example 'Probability of Y' Plot")
+WVPlots::BinaryYScatterPlot(frm, "x", "posY", use_glm=FALSE,
+                            title="Example 'Probability of Y' Plot (ggplot2 smoothing)")
 
 WVPlots::BinaryYScatterPlot(frm, "x", "posY", use_glm=TRUE, 
                             title="Example 'Probability of Y' Plot (GLM smoothing)")

@@ -60,3 +60,10 @@ frm = data.frame(x=rnorm(50),y=rnorm(50))
 frm$z <- frm$x+frm$y
 WVPlots::ScatterHistN(frm, "x", "y", "z", title="Example Joint Distribution")
 
+## ------------------------------------------------------------------------
+set.seed(34903490)
+x = rnorm(50)
+y = 0.5*x^2 + 2*x + rnorm(length(x))
+frm = data.frame(x=x,yC=y>=as.numeric(quantile(y,probs=0.8)))
+WVPlots::ROCPlot(frm, "x", "yC", TRUE, title="Example ROC plot")
+

@@ -9,7 +9,7 @@ NULL
 #' @param yvar name of the dependent (output or result to be modeled) column in frame
 #' @param title title to place on plot
 #' @param ...  no unnamed argument, added to force named binding of later arguments.
-#' @param smoothmethod (optional) one of 'auto' (the default), 'lm', or 'identity'.  If smoothmethod is 'auto' or 'lm' a smoothing curve or line (respectively) is added and R-squared of the best linear fit of xvar to yvar is reported.  If smoothmethod is 'identity' then the y=x line is added and the R-squared of xvar to yvar (without the linear transform used in the other smoothmethod modes) is reported.
+#' @param smoothmethod (optional) one of 'auto' (the default), 'loess', 'gam', 'lm', or 'identity'.  If smoothmethod is 'auto' or 'lm' a smoothing curve or line (respectively) is added and R-squared of the best linear fit of xvar to yvar is reported.  If smoothmethod is 'identity' then the y=x line is added and the R-squared of xvar to yvar (without the linear transform used in the other smoothmethod modes) is reported.
 #' @param annot_size numeric scale annotation text (if present)
 #' @param minimal_labels logical drop some annotations
 #' @param binwidth_x  numeric binwidth for x histogram
@@ -26,7 +26,7 @@ NULL
 #'
 #' @export
 ScatterHist = function(frame, xvar, yvar,title, ...,
-                       smoothmethod="auto", # only works for 'auto', 'lm', and 'identity'
+                       smoothmethod="auto", # only works for 'auto', 'loess', 'gam', 'lm', and 'identity'
                        annot_size=5,
                        minimal_labels = TRUE,
                        binwidth_x = NULL,
@@ -34,7 +34,7 @@ ScatterHist = function(frame, xvar, yvar,title, ...,
                        adjust_x = 1,
                        adjust_y = 1) {
   checkArgs(frame=frame,xvar=xvar,yvar=yvar,title=title,...)
-  if(!(smoothmethod %in% c('auto','lm','identity'))) {
+  if(!(smoothmethod %in% c('auto','loess','gam','lm','identity'))) {
     stop("smoothed method must be one of 'auto','lm', or 'identity'")
   }
   ..density.. <- NULL # used as a symbol, declare not an unbound variable
@@ -58,26 +58,25 @@ ScatterHist = function(frame, xvar, yvar,title, ...,
   origTitle <- title
   if(requireNamespace('sigr',quietly = TRUE)) {
     title <- paste0(origTitle,'\nData: ',
-                    sigr::render(sigr::wrapFTest(frame,xvar,yvar),format='ascii'))
+                   sigr::render(sigr::wrapFTest(frame,xvar,yvar),format='ascii'))
   }
   gSmooth = NULL
-  if(smoothmethod=='auto') {
+  if(smoothmethod %in%  c('auto','loess','gam')) {
     gSmooth = ggplot2::geom_smooth(method=smoothmethod)
   } else if(smoothmethod=="lm") {
     tryCatch({
-    # get goodness of linear relation
-    model = lm(paste(yvar,"~",xvar), data=frame)
-    fstat = summary(model)$fstatistic
-    rsqr = summary(model)$r.squared
-    pval = pf(fstat[["value"]], fstat[["numdf"]], fstat[["dendf"]], lower.tail=FALSE)
+      # get goodness of linear relation
+      model = lm(paste(yvar,"~",xvar), data=frame)
+      fstat = summary(model)$fstatistic
+      rsqr = summary(model)$r.squared
+      pval = pf(fstat[["value"]], fstat[["numdf"]], fstat[["dendf"]], lower.tail=FALSE)
 
-    # print(summary(model))
-    fitstring = paste("R-squared = ", format(rsqr, digits=3))
-    sigstring = paste("Significance = ", format(pval, digits=3))
-
-    empty = empty + ggplot2::annotate("text", x=0.5, y=0.75, label=fitstring, size=annot_size) +
-      ggplot2::annotate("text", x=0.5, y=0.5, label=sigstring, size=annot_size)},
-    error=function(x){})
+      # print(summary(model))
+      fitstring = paste("R-squared = ", format(rsqr, digits=3))
+      sigstring = paste("Significance = ", format(pval, digits=3))
+    },
+    error=function(x){}
+    )
     gSmooth = ggplot2::geom_smooth(method=smoothmethod)
     title <- origTitle
     if(requireNamespace('sigr',quietly = TRUE)) {
@@ -89,7 +88,6 @@ ScatterHist = function(frame, xvar, yvar,title, ...,
     rsqr = 1 - sum((frame[[yvar]]-frame[[xvar]])^2)/sum((frame[[yvar]]-meanY)^2)
     fitstring = paste("R-squared = ", format(rsqr, digits=3))
 
-    empty = empty + ggplot2::annotate("text", x=0.5, y=0.75, label=fitstring, size=annot_size)
     gSmooth = ggplot2::geom_abline(slope=1,linetype=2,color='blue')
   }
 
@@ -110,7 +108,9 @@ ScatterHist = function(frame, xvar, yvar,title, ...,
   #  print(xlims)
   # print(ggplot_build(plot_center)$panel$ranges[[1]]$x.range)
 
-  plot_center = plot_center + ggplot2::xlim(xlims)
+  plot_center = plot_center +
+    ggplot2::coord_cartesian(xlim=xlims) +
+    ggplot2::scale_x_continuous(expand = c(0,0))
 
   # print(ggplot_build(plot_center)$panel$ranges[[1]]$x.range)
 
@@ -124,9 +124,10 @@ ScatterHist = function(frame, xvar, yvar,title, ...,
   #
   plot_top <- ggplot2::ggplot(frame, ggplot2::aes_string(x=xvar)) +
     ggplot2::geom_histogram(ggplot2::aes(y=..density..), fill="gray",
-                   color="white", binwidth=binwidth_x) +
+                   color="white", binwidth=binwidth_x, bins=30) +
     ggplot2::geom_line(stat='density',color="blue", adjust=adjust_x) +
-    ggplot2::xlim(xlims)
+    ggplot2::coord_cartesian(xlim=xlims) +
+    ggplot2::scale_x_continuous(expand = c(0,0))
   if(minimal_labels) {
     plot_top = plot_top +
       ggplot2::theme(legend.position = "none",
@@ -143,9 +144,10 @@ ScatterHist = function(frame, xvar, yvar,title, ...,
   # marginal density of y - plot on the right
   plot_right <- ggplot2::ggplot(frame, ggplot2::aes_string(x=yvar)) +
     ggplot2::geom_histogram(ggplot2::aes(y=..density..), fill="gray",
-                   color="white", binwidth=binwidth_y) +
+                   color="white", binwidth=binwidth_y, bins=30) +
     ggplot2::geom_line(stat='density',color="blue", adjust=adjust_y) +
-    ggplot2::xlim(ylims) +
+    ggplot2::coord_cartesian(xlim=ylims) +
+    ggplot2::scale_x_continuous(expand = c(0,0)) +
     ggplot2::coord_flip()
   if(minimal_labels) {
     plot_right = plot_right +
@@ -159,8 +161,13 @@ ScatterHist = function(frame, xvar, yvar,title, ...,
       ggplot2::theme(plot.margin = grid::unit(c(0, 1, 0, 0), "lines"))
   }
 
-  yPadFn <- designYLabelPadFunction(plot_center + ggplot2::ylim(ylims),plot_top)
-  plot_center <- plot_center + ggplot2::scale_y_continuous(limits=ylims,label=yPadFn)
+  # estimate size
+  yPadFn <- designYLabelPadFunction(plot_center +
+                                      ggplot2::scale_y_continuous(limits=ylims, expand = c(0,0)),
+                                    plot_top)
+  # adjust using estimate
+  plot_center <- plot_center +
+    ggplot2::scale_y_continuous(limits=ylims, label=yPadFn, expand = c(0,0))
   plot_top <- plot_top + ggplot2::scale_y_continuous(label=yPadFn)
 
   # arrange the plots together, with appropriate height and width
