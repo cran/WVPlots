@@ -1,4 +1,10 @@
 
+# WVPlots 0.3.0 2018-03-20
+
+ * Make dependencies more flexible.
+ * Remove replyr dependency.
+ * Stop re-exporting wrapr functions.
+
 # WVPlots 0.2.9 2018-03-13
 
  * Add LogLogPlot.

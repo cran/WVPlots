@@ -1,5 +1,7 @@
 
-
+#' @importFrom cdata unpivot_to_blocks
+#' @importFrom RSQLite initExtension
+NULL
 
 # define some helper and reporting functions
 # calculate area under the curve of numeric vectors x,y
@@ -67,6 +69,10 @@ relativeGiniScore <- function(modelValues, yValues) {
 #'
 #' @export
 GainCurvePlot = function(frame, xvar, truthVar, title, ...) {
+  if( (!requireNamespace("cdata", quietly = TRUE)) ||
+      (!requireNamespace("RSQLite", quietly = TRUE)) ) {
+    return("WVPlots::GainCurvePlot requires the cdata and RSQLite packages for data shaping")
+  }
   checkArgs(
     frame = frame,
     xvar = xvar,
@@ -259,6 +265,10 @@ makeRelativeGiniCostScorer <- function(costcol) {
 #'
 #' @export
 GainCurvePlotC = function(frame, xvar, costVar, truthVar, title, ...) {
+  if( (!requireNamespace("cdata", quietly = TRUE)) ||
+      (!requireNamespace("RSQLite", quietly = TRUE)) ) {
+    return("WVPlots::GainCurvePlotC requires the cdata and RSQLite packages for data shaping")
+  }
   checkArgs(
     frame = frame,
     xvar = xvar,
@@ -445,6 +455,10 @@ GainCurvePlotWithNotation = function(frame,
                                      gainx,
                                      labelfun,
                                      ...) {
+  if( (!requireNamespace("cdata", quietly = TRUE)) ||
+      (!requireNamespace("RSQLite", quietly = TRUE)) ) {
+    return("WVPlots::GainCurvePlotWithNotation requires the cdata and RSQLite packages for data shaping")
+  }
   checkArgs(
     frame = frame,
     xvar = xvar,
