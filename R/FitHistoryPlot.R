@@ -1,4 +1,7 @@
 
+
+
+
 #' Plot the trajectory of a model fit.
 #'
 #' Plot a history of fit over a trajetory of times.  Example below gives

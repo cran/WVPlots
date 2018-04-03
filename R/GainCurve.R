@@ -1,7 +1,5 @@
 
-#' @importFrom cdata unpivot_to_blocks
-#' @importFrom RSQLite initExtension
-NULL
+
 
 # define some helper and reporting functions
 # calculate area under the curve of numeric vectors x,y
@@ -26,8 +24,13 @@ areaCalc <- function(x, y) {
 
 relativeGiniScore <- function(modelValues, yValues) {
   d = data.frame(predcol = modelValues, truthcol = yValues)
-  predord = order(d[['predcol']], decreasing = TRUE) # reorder, with highest first
-  wizard = order(d[['truthcol']], decreasing = TRUE)
+  n <- nrow(d)
+  predord = order(d[['predcol']],
+                  sample.int(n, n, replace = FALSE),
+                  decreasing = TRUE) # reorder, with highest first
+  wizard = order(d[['truthcol']],
+                 sample.int(n, n, replace = FALSE),
+                 decreasing = TRUE)
   npop = dim(d)[1]
 
   # data frame the cumulative prediction/truth as a function
@@ -42,10 +45,37 @@ relativeGiniScore <- function(modelValues, yValues) {
   # gini score is 2* (area - 0.5)
   idealArea = areaCalc(results$pctpop, results$wizard) - 0.5
   modelArea = areaCalc(results$pctpop, results$model) - 0.5
-  giniScore = modelArea / idealArea # actually, normalized gini score
-  giniScore
+  modelArea / idealArea # actually, normalized gini score
 }
 
+# sample with respect to multiple orders to get smooth sampling
+thin_frame_by_orders <- function(d, cols, groupcol, large_count) {
+  n <- nrow(d)
+  if(n<=(length(cols)+1)*large_count) {
+    return(d)
+  }
+  takes <- c()
+  for(ci in cols) {
+    ordi <- order(d[[groupcol]],
+                  d[[ci]],
+                  sample.int(n, n, replace = FALSE))
+    takesi <- seq(1, n, length.out = large_count)
+    sg <- d[[groupcol]][ordi]
+    deltas <- which(sg[-1]!=sg[-n])
+    boundsi <- NULL
+    if(length(deltas>1)) {
+      boundsi <- pmin(n, c(deltas, 1+deltas))
+    }
+    invperm <- wrapr::invert_perm(ordi)
+    takes <- sort(unique(c(takes,
+                           invperm[takesi],
+                           invperm[boundsi])))
+  }
+  if(2*length(takes)>=n) {
+    return(d)
+  }
+  d[takes, , drop = FALSE]
+}
 
 #' Plot the gain curve of a sort-order.
 #'
@@ -54,6 +84,8 @@ relativeGiniScore <- function(modelValues, yValues) {
 #' @param truthVar name of the dependent (output or result to be modeled) column in frame
 #' @param title title to place on plot
 #' @param ...  no unnamed argument, added to force named binding of later arguments.
+#' @param compute_sig logical, if TRUE compute significance.
+#' @param large_count numeric, number of plotting points to consider large (and cut down).
 #' @examples
 #'
 #' set.seed(34903490)
@@ -68,11 +100,10 @@ relativeGiniScore <- function(modelValues, yValues) {
 #'    title="Example Continuous Gain Curve")
 #'
 #' @export
-GainCurvePlot = function(frame, xvar, truthVar, title, ...) {
-  if( (!requireNamespace("cdata", quietly = TRUE)) ||
-      (!requireNamespace("RSQLite", quietly = TRUE)) ) {
-    return("WVPlots::GainCurvePlot requires the cdata and RSQLite packages for data shaping")
-  }
+GainCurvePlot = function(frame, xvar, truthVar, title,
+                         ...,
+                         compute_sig = TRUE,
+                         large_count = 1000) {
   checkArgs(
     frame = frame,
     xvar = xvar,
@@ -89,8 +120,13 @@ GainCurvePlot = function(frame, xvar, truthVar, title, ...) {
   predcol <- as.numeric(frame[[xvar]])
   # data frame of pred and truth, sorted in order of the predictions
   d = data.frame(predcol = predcol, truthcol = truthcol)
-  predord = order(d[['predcol']], decreasing = TRUE) # reorder, with highest first
-  wizard = order(d[['truthcol']], decreasing = TRUE)
+  n <- nrow(d)
+  predord = order(d[['predcol']],
+                  sample.int(n, n, replace = FALSE),
+                  decreasing = TRUE) # reorder, with highest first
+  wizard = order(d[['truthcol']],
+                 sample.int(n, n, replace = FALSE),
+                 decreasing = TRUE)
   npop = dim(d)[1]
 
   # data frame the cumulative prediction/truth as a function
@@ -105,14 +141,18 @@ GainCurvePlot = function(frame, xvar, truthVar, title, ...) {
   # gini score is 2* (area - 0.5)
   idealArea = areaCalc(results$pctpop, results$wizard) - 0.5
   modelArea = areaCalc(results$pctpop, results$model) - 0.5
-  giniScore = modelArea / idealArea # actually, normalized gini score
+  relGiniScore = modelArea / idealArea # actually, normalized gini score
 
   # transform the frame into the tall form, for plotting
-  results <-
-    cdata::unpivot_to_blocks(results,
-                             nameForNewKeyColumn = 'sort_criterion',
-                             nameForNewValueColumn = 'pct_outcome',
-                             columnsToTakeFrom = c('model', 'wizard'))
+  r1 <- data.frame(pctpop = results$pctpop,
+                   pct_outcome = results$model,
+                   sort_criterion = "model",
+                   stringsAsFactors = FALSE)
+  r2 <- data.frame(pctpop = results$pctpop,
+                   pct_outcome = results$wizard,
+                   sort_criterion = "wizard",
+                   stringsAsFactors = FALSE)
+  results <- rbind(r1, r2)
   # rename sort_criterion
   sortKeyM <- c('model' = paste('model: sort by', xvar),
                'wizard' = paste('wizard: sort by', truthVar))
@@ -124,7 +164,7 @@ GainCurvePlot = function(frame, xvar, truthVar, title, ...) {
   modelKey = names(colorKey)[[1]]
 
   pString <- ''
-  if (requireNamespace('sigr', quietly = TRUE)) {
+  if(compute_sig && requireNamespace('sigr', quietly = TRUE)) {
     sp <-
       sigr::permutationScoreModel(predcol, truthcol, relativeGiniScore)
     pString <-
@@ -135,6 +175,12 @@ GainCurvePlot = function(frame, xvar, truthVar, title, ...) {
              ')>permuted relGini, ',
              pString)
   }
+
+  # cut down the number of points
+  results <- thin_frame_by_orders(results,
+                                  c("pctpop", "pct_outcome"),
+                                  "sort_criterion",
+                                  large_count)
 
   # plot
   gplot = ggplot2::ggplot(data = results) +
@@ -185,8 +231,10 @@ GainCurvePlot = function(frame, xvar, truthVar, title, ...) {
         '~',
         xvar),
       subtitle=paste0(
-        'relative Gini score: ',
-        format(giniScore, digits = 2),
+        'Gini score: ',
+        format(idealArea, digits = 2),
+        ', relative Gini score: ',
+        format(relGiniScore, digits = 2),
         pString
       )
     ) +
@@ -210,8 +258,13 @@ makeRelativeGiniCostScorer <- function(costcol) {
     d = data.frame(predcol = predcol,
                    truthcol = truthcol,
                    costcol = costcol)
-    predord = order(d[['predcol']], decreasing = TRUE) # reorder, with highest first
-    wizard = order(d[['truthcol']] / d[['costcol']], decreasing = TRUE)
+    n <- nrow(d)
+    predord = order(d[['predcol']],
+                    sample.int(n, n, replace = FALSE),
+                    decreasing = TRUE) # reorder, with highest first
+    wizard = order(d[['truthcol']] / d[['costcol']],
+                   sample.int(n, n, replace = FALSE),
+                   decreasing = TRUE)
     npop = dim(d)[1]
 
     # data frame the cumulative prediction/truth as a function
@@ -236,8 +289,7 @@ makeRelativeGiniCostScorer <- function(costcol) {
     # gini score is 2* (area - 0.5)
     idealArea = areaCalc(resultsW$pctpop, resultsW$pct_outcome) - 0.5
     modelArea = areaCalc(resultsM$pctpop, resultsM$pct_outcome) - 0.5
-    giniScore = modelArea / idealArea # actually, normalized gini score
-    giniScore
+    modelArea / idealArea # actually, normalized gini score
   }
 }
 
@@ -250,6 +302,8 @@ makeRelativeGiniCostScorer <- function(costcol) {
 #' @param truthVar name of the dependent (output or result to be modeled) column in frame
 #' @param title title to place on plot
 #' @param ...  no unnamed argument, added to force named binding of later arguments.
+#' @param compute_sig logical, if TRUE compute significance
+#' @param large_count numeric, number of plotting points to consider large (and cut down).
 #' @examples
 #'
 #' set.seed(34903490)
@@ -264,11 +318,10 @@ makeRelativeGiniCostScorer <- function(costcol) {
 #'    title="Example Continuous Gain CurveC")
 #'
 #' @export
-GainCurvePlotC = function(frame, xvar, costVar, truthVar, title, ...) {
-  if( (!requireNamespace("cdata", quietly = TRUE)) ||
-      (!requireNamespace("RSQLite", quietly = TRUE)) ) {
-    return("WVPlots::GainCurvePlotC requires the cdata and RSQLite packages for data shaping")
-  }
+GainCurvePlotC = function(frame, xvar, costVar, truthVar, title,
+                          ...,
+                          compute_sig = TRUE,
+                          large_count = 1000) {
   checkArgs(
     frame = frame,
     xvar = xvar,
@@ -288,8 +341,13 @@ GainCurvePlotC = function(frame, xvar, costVar, truthVar, title, ...) {
   d = data.frame(predcol = predcol,
                  truthcol = truthcol,
                  costcol = costcol)
-  predord = order(d[['predcol']], decreasing = TRUE) # reorder, with highest first
-  wizard = order(d[['truthcol']] / d[['costcol']], decreasing = TRUE)
+  n <- nrow(d)
+  predord = order(d[['predcol']],
+                  sample.int(n, n, replace = FALSE),
+                  decreasing = TRUE) # reorder, with highest first
+  wizard = order(d[['truthcol']] / d[['costcol']],
+                 sample.int(n, n, replace = FALSE),
+                 decreasing = TRUE)
   npop = dim(d)[1]
 
   # data frame the cumulative prediction/truth as a function
@@ -312,7 +370,7 @@ GainCurvePlotC = function(frame, xvar, costVar, truthVar, title, ...) {
   # gini score is 2* (area - 0.5)
   idealArea = areaCalc(resultsW$pctpop, resultsW$pct_outcome) - 0.5
   modelArea = areaCalc(resultsM$pctpop, resultsM$pct_outcome) - 0.5
-  giniScore = modelArea / idealArea # actually, normalized gini score
+  relGiniScore = modelArea / idealArea # actually, normalized gini score
 
 
   # rename levels of sort criterion
@@ -322,7 +380,7 @@ GainCurvePlotC = function(frame, xvar, costVar, truthVar, title, ...) {
   results[["sort_criterion"]] = names(colorKey)[results[["sort_criterion"]]]
 
   pString <- ''
-  if (requireNamespace('sigr', quietly = TRUE)) {
+  if (compute_sig && requireNamespace('sigr', quietly = TRUE)) {
     relativeGiniCostScorer <- makeRelativeGiniCostScorer(costcol)
     sp <-
       sigr::permutationScoreModel(predcol, truthcol, relativeGiniCostScorer)
@@ -334,6 +392,12 @@ GainCurvePlotC = function(frame, xvar, costVar, truthVar, title, ...) {
              ')>permuted relGini, ',
              pString)
   }
+
+  # cut down the number of points
+  results <- thin_frame_by_orders(results,
+                                  c("pctpop", "pct_outcome"),
+                                  "sort_criterion",
+                                  large_count)
 
   # plot
   gplot = ggplot2::ggplot(data = results) +
@@ -384,8 +448,10 @@ GainCurvePlotC = function(frame, xvar, costVar, truthVar, title, ...) {
         '~',
         xvar),
       subtitle=paste0(
-        'relative Gini score: ',
-        format(giniScore, digits = 2),
+        'Gini score: ',
+        format(idealArea, digits = 2),
+        ', relative Gini score: ',
+        format(relGiniScore, digits = 2),
         pString
       )
     ) +
@@ -404,7 +470,10 @@ GainCurvePlotC = function(frame, xvar, costVar, truthVar, title, ...) {
 # find the y value that approximately corresponds to an x value on the gain curve
 get_gainy = function(frame, xvar, truthVar, gainx) {
   # The sort order for predicted salary, decreasing
-  ord = order(frame[[xvar]], decreasing = TRUE)
+  n <- nrow(frame)
+  ord = order(frame[[xvar]],
+              sample.int(n, n, replace = FALSE),
+              decreasing = TRUE)
 
   # top 25 predicted salaries
   n = round(nrow(frame) * gainx)
@@ -424,6 +493,8 @@ get_gainy = function(frame, xvar, truthVar, gainx) {
 #' @param gainx the point on the x axis corresponding to the desired label
 #' @param labelfun a function to return a label for the marked point
 #' @param ...  no unarmed argument, added to force named binding of later arguments.
+#' @param compute_sig logical, if TRUE compute significance
+#' @param large_count numeric, number of plotting points to consider large (and cut down).
 #' @examples
 #'
 #' set.seed(34903490)
@@ -454,12 +525,10 @@ GainCurvePlotWithNotation = function(frame,
                                      title,
                                      gainx,
                                      labelfun,
-                                     ...) {
-  if( (!requireNamespace("cdata", quietly = TRUE)) ||
-      (!requireNamespace("RSQLite", quietly = TRUE)) ) {
-    return("WVPlots::GainCurvePlotWithNotation requires the cdata and RSQLite packages for data shaping")
-  }
-  checkArgs(
+                                     ...,
+                                     compute_sig = TRUE,
+                                     large_count = 1000) {
+   checkArgs(
     frame = frame,
     xvar = xvar,
     yvar = truthVar,
@@ -468,7 +537,9 @@ GainCurvePlotWithNotation = function(frame,
   )
   gainy = get_gainy(frame, xvar, truthVar, gainx)
   label = labelfun(gainx, gainy)
-  gp = GainCurvePlot(frame, xvar, truthVar, title) +
+  gp = GainCurvePlot(frame, xvar, truthVar, title,
+                     compute_sig = compute_sig,
+                     large_count = large_count) +
     ggplot2::geom_vline(xintercept = gainx,
                         color = "red",
                         alpha = 0.5) +
