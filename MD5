@@ -1,6 +1,6 @@
-8e6cba7446b06ca11ec4f7a5aafda4ed *DESCRIPTION
+085c3aa04324cd2470a75bdba7810de1 *DESCRIPTION
 8be902f3f3ed16861bcdd88cb018689b *NAMESPACE
-30902813d5b28d3aa813e7ccda30c75f *NEWS.md
+f54b54c760b3b215ba79f2a63017dcd9 *NEWS.md
 c8adac7bb21d4524e9ab87a68c7cdb27 *R/BinaryYScatterPlot.R
 19ec26a0aa994a567a18475229de359a *R/ClevelandDotPlot.R
 3dd407ecb315c2024b139c4cf9d968a5 *R/ConditionalSmoothedScatterPlot.R
@@ -8,13 +8,13 @@ f5b33ff8232282bd2f955858c112cb58 *R/DiscreteDistribution.R
 c56039388c54c11bd12d11c8e9423d47 *R/DistributionPlot.R
 5ab91692f664208c0778aa5504748c83 *R/DoubleDensity.R
 b9c43af37be300fe43d0fba066462f49 *R/DoubleHistogram.R
-e00077b0ca4438a5e7b72d9e3d48f418 *R/FitHistoryPlot.R
+94d14dc53163778403949f30e744d2c2 *R/FitHistoryPlot.R
 75fffd43850c3d829e2f4057de2ce26d *R/GainCurve.R
 f84b093eb73f6f1898521475eaef28fd *R/LogLogPlot.R
 785cc219e5346cbebbf9afbcccb06c33 *R/PRPlot.R
-365d195140bdb70005e3f1991ac7c166 *R/ROC.R
+fd871b112dbeb5c9b1a239b290d3d532 *R/ROC.R
 a3b6746032717366e4bf62dbcd7cc706 *R/ScatterBoxPlot.R
-0a7910c4c3131344832671cab2b825e4 *R/ScatterHist.R
+f63ad3150b1bd7af73f616f03016e771 *R/ScatterHist.R
 38337fc1d31d083652c21b59817a7b74 *R/ScatterHistC.R
 914e5a43a713fe9ef559d0e42cfc5a26 *R/ShadedDensity.R
 84bd69f1a90149ba0f75e4d57ba099f7 *R/WVPlots.R
@@ -24,10 +24,10 @@ aaf14910befc26f4d109b31043aee47c *README.md
 e268028016a7138beb7fbba3949f7db5 *build/vignette.rds
 a3096800924832dc40aaa19827071266 *inst/doc/WVPlots_concept.R
 4b112fd3138bc3d9b52b741c56b02edf *inst/doc/WVPlots_concept.Rmd
-6a965d2eea70ee97d1ffb46515104771 *inst/doc/WVPlots_concept.html
+f4247ed92b03c2326993ac0e654fed05 *inst/doc/WVPlots_concept.html
 44f14c1995d9edbbaca47d26704de1f9 *inst/doc/WVPlots_examples.R
 56728c8a7c5c4ba6582a9e2b3dbbd4fb *inst/doc/WVPlots_examples.Rmd
-7000dae8dc6a1e1f8473eb0336803f90 *inst/doc/WVPlots_examples.html
+2ddbd2f4b6ac732b88ef4f9f3e7a51cd *inst/doc/WVPlots_examples.html
 d0e7fae015853262b40770cffb4dad52 *man/BinaryYScatterPlot.Rd
 082aebd56db84e6cab47a58db725c024 *man/ClevelandDotPlot.Rd
 e1ec11d840ae4cb1c8abf55080e54524 *man/ConditionalSmoothedScatterPlot.Rd
@@ -57,7 +57,7 @@ a195311eee6d108eca6510debc1a3714 *man/ShadedDensity.Rd
 5c602015f86049e4e91c7a5485ff2769 *man/graphROC.Rd
 7465070abdad4086cc52ed511facea3d *man/plot_Keras_fit_trajectory.Rd
 a5af289a0940152919940d7733ad5436 *man/plot_fit_trajectory.Rd
-74e773a36636a852ae0374c7b967e341 *man/plotlyROC.Rd
+3b60c32029bbc170c3acb1bee7ff96aa *man/plotlyROC.Rd
 b9ff884270c2286e67074ea02c9eaace *tests/testthat.R
 45dac894e602933e71b978eea968c8a4 *tests/testthat/testAll.R
 42b518ff33b91a0c47e97d89cdd3af6f *tools/WVPlots.png
