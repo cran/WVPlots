@@ -1,17 +1,22 @@
 
 
-#' Plot a conditional scatter plot with marginals.  xvar is the independent variable (input or model), and yvar is the dependent variable, and cvar is the condition code
+#' Plot a conditional scatter plot with marginals.
+#'
+#' Plot a scatter plot conditioned on a discrete variable, with marginal conditional density plots.
+#'
+#' \code{xvar} and \code{yvar} are the coordinates of the points, and \code{cvar} is the
+#' discrete conditioning variable that indicates which category each point (x,y) belongs to.
 #'
 #' @param frame data frame to get values from
-#' @param xvar name of the independent (input or model) column in frame
-#' @param yvar name of the dependent (output or result to be modeled) column in frame
+#' @param xvar name of the x variable
+#' @param yvar name of the y variable
 #' @param cvar name of condition variable
 #' @param title title to place on plot
 #' @param ...  no unnamed argument, added to force named binding of later arguments.
 #' @param annot_size numeric scale annotation text (if present)
 #' @param colorPalette name of a Brewer palette (see http://colorbrewer2.org/ )
-#' @param adjust_x  numeric adjust x density plot
-#' @param adjust_y  numeric adjust y density plot
+#' @param adjust_x  numeric: adjust x density plot
+#' @param adjust_y  numeric: adjust y density plot
 #' @examples
 #'
 #' set.seed(34903490)
@@ -30,7 +35,11 @@ ScatterHistC = function(frame, xvar, yvar, cvar, title, ...,
      (!requireNamespace("gridExtra", quietly = TRUE))) {
     return("WVPlots::ScatterHistC requires the grid and gridExtra packages be installed")
   }
-  checkArgs(frame=frame,xvar=xvar,yvar=yvar,title=title,...)
+  frame <- check_frame_args_list(...,
+                                 frame = frame,
+                                 name_var_list = list(xvar = xvar, yvar = yvar, cvar = cvar),
+                                 title = title,
+                                 funname = "WVPlots::ScatterHistC")
   minimal_labels = TRUE
 
   # Use this plot to print the legend.
@@ -130,7 +139,7 @@ ScatterHistC = function(frame, xvar, yvar, cvar, title, ...,
   plot_right <- ggplot2::ggplot(frame,
                                 ggplot2::aes_string(x=yvar,color=cvar)) +
     ggplot2::geom_line(stat='density', adjust=adjust_y) +
-    ggplot2::coord_cartesian(xlim=ylims) +
+   #  ggplot2::coord_cartesian(xlim=ylims) + # causes a warning with ggplot2 2.2.1.9000
     ggplot2::scale_x_continuous(expand = c(0,0)) +
     ggplot2::coord_flip(xlim=ylims, expand=0)
   if(minimal_labels) {
@@ -165,19 +174,29 @@ ScatterHistC = function(frame, xvar, yvar, cvar, title, ...,
                           ncol = 2, nrow = 2, widths = c(4,1), heights = c(1, 4))
 }
 
-#' Plot a height scatter plot with marginals.  xvar is the independent variable (input or model), and yvar is the dependent variable, and zvar is the condition height.
+#' Plot a height scatter plot with marginals.
+#'
+#' Plot a scatter plot conditioned on a continuous variable, with marginal conditional density plots.
+#'
+#' \code{xvar} and \code{yvar} are the coordinates of the points, and \code{zvar} is the
+#' continuous conditioning variable. \code{zvar} is partitioned into \code{nclus} disjoint
+#' ranges (by default, 3), which are then treated as discrete categories.The scatterplot and marginal density plots
+#' are color-coded by these categories.
 #'
 #' @param frame data frame to get values from
-#' @param xvar name of the independent (input or model) column in frame
-#' @param yvar name of the dependent (output or result to be modeled) column in frame
+#' @param xvar name of the x variable
+#' @param yvar name of the y variable
 #' @param zvar name of height variable
 #' @param title title to place on plot
 #' @param ...  no unnamed argument, added to force named binding of later arguments.
-#' @param annot_size numeric scale annotation text (if present)
+#' @param annot_size numeric: scale annotation text (if present)
 #' @param colorPalette name of a Brewer palette (see http://colorbrewer2.org/ )
-#' @param nclus scalar number of z-clusters to plot
-#' @param adjust_x  numeric adjust x density plot
-#' @param adjust_y  numeric adjust y density plot
+#' @param nclus scalar: number of z-clusters to plot
+#' @param adjust_x  numeric: adjust x density plot
+#' @param adjust_y  numeric: adjust y density plot
+#'
+#' @seealso \code{\link{ScatterHistC}}
+#'
 #' @examples
 #'
 #' set.seed(34903490)
@@ -196,7 +215,11 @@ ScatterHistN = function(frame, xvar, yvar, zvar, title, ...,
      (!requireNamespace("gridExtra", quietly = TRUE))) {
     return("WVPlots::ScatterHistN requires the grid and gridExtra packages be installed")
   }
-  checkArgs(frame=frame,xvar=xvar,yvar=yvar,title=title,...)
+  frame <- check_frame_args_list(...,
+                                 frame = frame,
+                                 name_var_list = list(xvar = xvar, yvar = yvar, zvar = zvar),
+                                 title = title,
+                                 funname = "WVPlots::ScatterHistN")
   q <- sort(unique(quantile(frame[[zvar]],seq(0, 1, 1/nclus))))
   yC <- cut(frame[[zvar]],q,include.lowest=TRUE)
   if(length(unique(yC))<=1) {

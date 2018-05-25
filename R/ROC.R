@@ -35,9 +35,9 @@ novelPointPositionsR <- function(x) {
 #' x = rnorm(50)
 #' y = 0.5*x^2 + 2*x + rnorm(length(x))
 #' frm = data.frame(x=x,yC=y>=as.numeric(quantile(y,probs=0.8)))
-#' WVPlots::graphROC(frm$x, frm$yC)
+#' WVPlots::graphROC(frm$x, frm$yC, estimate_sig = TRUE)
 #'
-#' @export
+#' @noRd
 #'
 graphROC <- function(modelPredictions, yValues) {
   if(!is.numeric(modelPredictions)) {
@@ -90,15 +90,24 @@ graphROC <- function(modelPredictions, yValues) {
 
 #' Plot receiver operating characteristic plot.
 #'
+#' Plot receiver operating characteristic plot.
+#'
+#' See http://www.nature.com/nmeth/journal/v13/n8/full/nmeth.3945.html for a discussion of
+#' true positive and false positive rates,
+#' and how the ROC plot relates to the precision/recall plot.
+#'
 #' @param frame data frame to get values from
 #' @param xvar name of the independent (input or model) column in frame
 #' @param truthVar name of the dependent (output or result to be modeled) column in frame
 #' @param truthTarget value we consider to be positive
 #' @param title title to place on plot
 #' @param ...  no unnamed argument, added to force named binding of later arguments.
+#' @param estimate_sig logical, if TRUE estimate and display significance of difference from AUC 0.5.
 #' @param returnScores logical if TRUE return detailed permutedScores
 #' @param nrep number of permutation repititions to estimate p values.
 #' @param parallelCluster (optional) a cluster object created by package parallel or package snow.
+#'
+#' @seealso \code{\link{PRPlot}}
 #'
 #' @examples
 #'
@@ -106,15 +115,21 @@ graphROC <- function(modelPredictions, yValues) {
 #' x = rnorm(50)
 #' y = 0.5*x^2 + 2*x + rnorm(length(x))
 #' frm = data.frame(x=x,yC=y>=as.numeric(quantile(y,probs=0.8)))
-#' WVPlots::ROCPlot(frm, "x", "yC", TRUE, title="Example ROC plot")
+#' WVPlots::ROCPlot(frm, "x", "yC", TRUE, title="Example ROC plot", estimate_sig = TRUE)
 #'
 #' @export
 ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
                     ...,
-                    returnScores=FALSE,
-                    nrep=100,
-                    parallelCluster=NULL) {
-  checkArgs(frame=frame,xvar=xvar,yvar=truthVar,title=title,...)
+                    estimate_sig = FALSE,
+                    returnScores = FALSE,
+                    nrep = 100,
+                    parallelCluster = NULL) {
+  # check and narrow frame
+  frame <- check_frame_args_list(...,
+                                 frame = frame,
+                                 name_var_list = list(xvar = xvar, truthVar = truthVar),
+                                 title = title,
+                                 funname = "WVPlots::ROCPlot")
   outcol <- frame[[truthVar]]==truthTarget
   if(length(unique(outcol))!=2) {
     return(NULL)
@@ -122,15 +137,27 @@ ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
   predcol <- frame[[xvar]]
   rocList <- graphROC(predcol,outcol)
   auc <- rocList$area
-  aucsig <- sigr::permutationScoreModel(modelValues=predcol,
-                                        yValues=outcol,
-                                        scoreFn=sigr::calcAUC,
-                                        returnScores=returnScores,
-                                        nRep=nrep,
-                                        parallelCluster=parallelCluster)
   palletName = "Dark2"
-  pString <- sigr::render(sigr::wrapSignificance(aucsig$pValue),format='ascii')
-  aucString <- sprintf('%.2g',auc)
+  aucsig <- NULL
+  pString <- NULL
+  subtitle <- NULL
+  if(estimate_sig) {
+    aucsig <- sigr::permutationScoreModel(modelValues=predcol,
+                                          yValues=outcol,
+                                          scoreFn=sigr::calcAUC,
+                                          returnScores=returnScores,
+                                          nRep=nrep,
+                                          parallelCluster=parallelCluster)
+    pString <- sigr::render(sigr::wrapSignificance(aucsig$pValue),format='ascii')
+    aucString <- sprintf('%.2g',auc)
+    subtitle <- paste0(
+      'AUC = ',aucString,
+      '\nalt. hyp.: AUC(',xvar,')>permuted AUC, ',
+      pString)
+  } else {
+    aucString <- sprintf('%.2g',auc)
+    subtitle <- paste('AUC =', aucString)
+  }
   plot <- ggplot2::ggplot() +
     ggplot2::geom_ribbon(data=rocList$lineGraph,
                          ggplot2::aes_string(x='FalsePositiveRate',
@@ -153,11 +180,8 @@ ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
     ggplot2::scale_fill_brewer(palette=palletName) +
     ggplot2::scale_color_brewer(palette=palletName) +
     ggplot2::ggtitle(paste0(title,'\n',
-                            truthVar, '==', truthTarget, ' ~ ', xvar, ', '),
-                     subtitle = paste0(
-                            'AUC=',aucString,
-                            '\nalt. hyp.: AUC(',xvar,')>permuted AUC, ',
-                            pString)) +
+                            truthVar, '==', truthTarget, ' ~ ', xvar),
+                     subtitle = subtitle) +
     ggplot2::ylim(0,1) + ggplot2::xlim(0,1)
   if(returnScores) {
     return(list(plot=plot,rocList=rocList,aucsig=aucsig,pString=pString))
@@ -167,7 +191,14 @@ ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
 
 
 
-#' Plot two receiver operating characteristic from the same data.frame.
+
+#' Compare two ROC plots.
+#'
+#' Plot two receiver operating characteristic curves from the same data.frame.
+#'
+#' The use case for this function is to compare the performance of two
+#' models when applied to a data set, where the predictions from both models
+#' are columns of the same data frame.
 #'
 #' @param frame data frame to get values from
 #' @param xvar1 name of the first independent (input or model) column in frame
@@ -176,9 +207,13 @@ ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
 #' @param truthTarget value we consider to be positive
 #' @param title title to place on plot
 #' @param ...  no unnamed argument, added to force named binding of later arguments.
+#' @param estimate_sig logical, if TRUE estimate and display significance of difference from AUC 0.5.
 #' @param returnScores logical if TRUE return detailed permutedScores
 #' @param nrep number of permutation repititions to estimate p values.
 #' @param parallelCluster (optional) a cluster object created by package parallel or package snow.
+#'
+#' @seealso \code{\link{ROCPlot}}
+#'
 #' @examples
 #'
 #' set.seed(34903490)
@@ -189,39 +224,55 @@ ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
 #' # WVPlots::ROCPlot(frm, "x1", "yC", TRUE, title="Example ROC plot")
 #' # WVPlots::ROCPlot(frm, "x2", "yC", TRUE, title="Example ROC plot")
 #' WVPlots::ROCPlotPair(frm, "x1", "x2", "yC", TRUE,
-#'    title="Example ROC pair plot")
+#'    title="Example ROC pair plot", estimate_sig = TRUE)
 #'
 #' @export
 ROCPlotPair <- function(frame, xvar1, xvar2, truthVar, truthTarget, title,
                         ...,
+                        estimate_sig=FALSE,
                         returnScores=FALSE,
                         nrep=100,
                         parallelCluster=NULL) {
-  checkArgs(frame=frame,xvar=xvar1,yvar=truthVar,title=title,...)
-  checkArgs(frame=frame,xvar=xvar2,yvar=truthVar,title=title,...)
+  frame <- check_frame_args_list(...,
+                                 frame = frame,
+                                 name_var_list = list(xvar1 = xvar1, xvar2 = xvar2, truthVar = truthVar),
+                                 title = title,
+                                 funname = "WVPlots::ROCPlotPair")
   outcol <- frame[[truthVar]]==truthTarget
   if(length(unique(outcol))!=2) {
     return(NULL)
   }
   rocList1 <- graphROC(frame[[xvar1]],outcol)
   rocList2 <- graphROC(frame[[xvar2]],outcol)
+  aucsig <- NULL
+  eString <- NULL
 
-  aucsig <- sigr::resampleScoreModelPair(frame[[xvar1]],
-                                         frame[[xvar2]],
-                                         frame[[truthVar]]==truthTarget,
-                                         scoreFn=sigr::calcAUC,
-                                         returnScores=returnScores,
-                                         nRep=nrep,
-                                         parallelCluster=parallelCluster)
-  eString <- sigr::render(sigr::wrapSignificance(aucsig$eValue,symbol = 'e'),
-                          format='ascii',
-                          pLargeCutoff=2.0)
-  nm1 <- paste0('1: ',xvar1,', AUC=',sprintf('%.2g',aucsig$observedScore1))
-  nm2 <- paste0('2: ',xvar2,', AUC=',sprintf('%.2g',aucsig$observedScore2))
+  nm1 <- paste0('1: ',xvar1,', AUC=',sprintf('%.2g',rocList1$area))
+  nm2 <- paste0('2: ',xvar2,', AUC=',sprintf('%.2g',rocList2$area))
+
+  subtitle <- NULL
+
+  if(estimate_sig) {
+    aucsig <- sigr::resampleScoreModelPair(frame[[xvar1]],
+                                           frame[[xvar2]],
+                                           frame[[truthVar]]==truthTarget,
+                                           scoreFn=sigr::calcAUC,
+                                           returnScores=returnScores,
+                                           nRep=nrep,
+                                           parallelCluster=parallelCluster)
+    eString <- sigr::render(sigr::wrapSignificance(aucsig$eValue,symbol = 'e'),
+                            format='ascii',
+                            pLargeCutoff=2.0)
+    subtitle <- paste0(
+      'testing: AUC(1)>AUC(2)\n on same data\n ',
+      eString)
+  }
+
   rocList1$pointGraph$model <- nm1
   rocList1$lineGraph$model <- nm1
   rocList2$pointGraph$model <- nm2
   rocList2$lineGraph$model <- nm2
+
   pointGraph <- rbind(rocList1$pointGraph,rocList2$pointGraph)
   lineGraph <- rbind(rocList1$lineGraph,rocList2$lineGraph)
   palletName = "Dark2"
@@ -244,11 +295,8 @@ ROCPlotPair <- function(frame, xvar1, xvar2, truthVar, truthTarget, title,
     ggplot2::scale_color_brewer(palette=palletName) +
     ggplot2::ggtitle(paste0(title,'\n',
                   truthVar, '==', truthTarget, ' ~ model'),
-                  subtitle = paste0(
-                  'testing: AUC(1)>AUC(2)\n on same data\n ',
-                  eString)) +
-    ggplot2::ylim(0,1) + ggplot2::xlim(0,1) +
-    ggplot2::theme(legend.position="bottom", legend.direction="vertical")
+                  subtitle = subtitle) +
+    ggplot2::ylim(0,1) + ggplot2::xlim(0,1)
   if(returnScores) {
     return(list(plot=plot,
                 rocList1=rocList1,rocList2=rocList2,
@@ -258,7 +306,12 @@ ROCPlotPair <- function(frame, xvar1, xvar2, truthVar, truthTarget, title,
 }
 
 
-#' Plot two receiver operating characteristic plots from unrelated frames.
+#' Compare two ROC plots.
+#'
+#' Plot two receiver operating characteristic curves from different data frames.
+#'
+#' Use this curve to compare model predictions to true outcome from two
+#' data frames, each of which has its own model predictions and true outcome columns.
 #'
 #' @param nm1 name of first model
 #' @param frame1 data frame to get values from
@@ -272,9 +325,13 @@ ROCPlotPair <- function(frame, xvar1, xvar2, truthVar, truthTarget, title,
 #' @param truthTarget2 value we consider to be positive
 #' @param title title to place on plot
 #' @param ...  no unnamed argument, added to force named binding of later arguments.
+#' @param estimate_sig logical, if TRUE estimate and display significance of difference from AUC 0.5.
 #' @param returnScores logical if TRUE return detailed permutedScores
 #' @param nrep number of permutation repititions to estimate p values.
 #' @param parallelCluster (optional) a cluster object created by package parallel or package snow.
+#'
+#' @seealso \code{\link{ROCPlot}}
+#'
 #' @examples
 #'
 #' set.seed(34903490)
@@ -286,18 +343,27 @@ ROCPlotPair <- function(frame, xvar1, xvar2, truthVar, truthTarget, title,
 #' # WVPlots::ROCPlot(frm, "x2", "yC", TRUE, title="Example ROC plot")
 #' WVPlots::ROCPlotPair2('train',frm, "x1", "yC", TRUE,
 #'                       'test', frm, "x2", "yC", TRUE,
-#'                       title="Example ROC pair plot")
+#'                       title="Example ROC pair plot", estimate_sig = TRUE)
 #'
 #' @export
 ROCPlotPair2 <- function(nm1, frame1, xvar1, truthVar1, truthTarget1,
                          nm2, frame2, xvar2, truthVar2, truthTarget2,
                          title,
                          ...,
-                         returnScores=FALSE,
-                         nrep=100,
-                         parallelCluster=NULL) {
-  checkArgs(frame=frame1,xvar=xvar1,yvar=truthVar1,title=title,...)
-  checkArgs(frame=frame2,xvar=xvar2,yvar=truthVar2,title=title,...)
+                         estimate_sig= TRUE,
+                         returnScores= FALSE,
+                         nrep= 100,
+                         parallelCluster= NULL) {
+  frame1 <- check_frame_args_list(...,
+                                  frame = frame1,
+                                  name_var_list = list(xvar1 = xvar1, truthVar1 = truthVar1),
+                                  title = title,
+                                  funname = "WVPlots::ROCPlotPair2")
+  frame2 <- check_frame_args_list(...,
+                                  frame = frame2,
+                                  name_var_list = list(xvar2 = xvar2, truthVar2 = truthVar2),
+                                  title = title,
+                                  funname = "WVPlots::ROCPlotPair2")
   test <- NULL # used as a symbol, declare not an unbound variable
   outcol1 <- frame1[[truthVar1]]==truthTarget1
   if(length(unique(outcol1))!=2) {
@@ -310,17 +376,27 @@ ROCPlotPair2 <- function(nm1, frame1, xvar1, truthVar1, truthTarget1,
   rocList1 <- graphROC(frame1[[xvar1]],outcol1)
   rocList2 <- graphROC(frame2[[xvar2]],outcol2)
 
-  d1 <- sigr::resampleTestAUC(frame1,xvar1,truthVar1,truthTarget1,
-                                nrep=nrep,returnScores = TRUE)
-  d2 <- sigr::resampleTestAUC(frame2,xvar2,truthVar2,truthTarget2,
-                                nrep=nrep,returnScores = TRUE)
-  aucsig <- sigr::estimateDifferenceZeroCrossing(d1$eScore$resampledScores -
-                                                 d2$eScore$resampledScores)
-  eString <- sigr::render(sigr::wrapSignificance(aucsig$eValue,symbol='e'),
-                                            format='ascii',
-                                            pLargeCutoff=0.5)
+  aucsig <- NULL
+  eString <- NULL
   nm1 <- paste0('1: ',nm1,' ',xvar1,', AUC=',sprintf('%.2g',rocList1$area))
   nm2 <- paste0('2: ',nm2,' ',xvar2,', AUC=',sprintf('%.2g',rocList2$area))
+  subtitle <- NULL
+  if(estimate_sig) {
+    d1 <- sigr::resampleTestAUC(frame1,xvar1,truthVar1,truthTarget1,
+                                nrep=nrep,returnScores = TRUE)
+    d2 <- sigr::resampleTestAUC(frame2,xvar2,truthVar2,truthTarget2,
+                                nrep=nrep,returnScores = TRUE)
+    aucsig <- sigr::estimateDifferenceZeroCrossing(d1$eScore$resampledScores -
+                                                     d2$eScore$resampledScores)
+    eString <- sigr::render(sigr::wrapSignificance(aucsig$eValue,symbol='e'),
+                            format='ascii',
+                            pLargeCutoff=0.5)
+
+    subtitle <- paste0(
+      'testing: AUC(1)>AUC(2)\n on different data\n ',
+      eString)
+  }
+
   rocList1$pointGraph$dataset <- nm1
   rocList1$lineGraph$dataset <- nm1
   rocList2$pointGraph$dataset <- nm2
@@ -347,11 +423,8 @@ ROCPlotPair2 <- function(nm1, frame1, xvar1, truthVar1, truthTarget1,
     ggplot2::scale_fill_brewer(palette=palletName) +
     ggplot2::scale_color_brewer(palette=palletName) +
     ggplot2::ggtitle(title,
-                     subtitle = paste0(
-                            'testing: AUC(1)>AUC(2)\n on different data\n ',
-                            eString)) +
-    ggplot2::ylim(0,1) + ggplot2::xlim(0,1) +
-    ggplot2::theme(legend.position="bottom", legend.direction="vertical")
+                     subtitle = subtitle) +
+    ggplot2::ylim(0,1) + ggplot2::xlim(0,1)
   if(returnScores) {
     return(list(plot=plot,
                 rocList1=rocList1,rocList2=rocList2,
@@ -367,6 +440,8 @@ ROCPlotPair2 <- function(nm1, frame1, xvar1, truthVar1, truthTarget1,
 
 #' Use \code{plotly} to produce a ROC plot.
 #'
+#' Use \code{plotly} to produce a ROC plot.
+#'
 #'
 #' @param d dataframe
 #' @param predCol name of column with numeric predictions
@@ -374,46 +449,69 @@ ROCPlotPair2 <- function(nm1, frame1, xvar1, truthVar1, truthTarget1,
 #' @param outcomeTarget value considred true
 #' @param title character title for plot
 #' @param ...  no unnamed argument, added to force named binding of later arguments.
+#' @param estimate_sig logical, if TRUE estimate and display significance of difference from AUC 0.5.
 #' @return plotly plot
+#'
+#' @seealso \code{\link{ROCPlot}}
 #'
 #' @examples
 #'
-#' # d <- data.frame(x= 1:5, y= c(TRUE, FALSE , TRUE, TRUE, TRUE))
-#' # plotlyROC(d, 'x', 'y', TRUE, 'example plot')
+#' if(requireNamespace("plotly", quietly = TRUE)) {
+#'    set.seed(34903490)
+#'    x = rnorm(50)
+#'    y = 0.5*x^2 + 2*x + rnorm(length(x))
+#'    frm = data.frame(x=x,yC=y>=as.numeric(quantile(y,probs=0.8)))
+#'    plotlyROC(frm, 'x', 'yC', TRUE, 'example plot', estimate_sig = TRUE)
+#' }
+#'
 #'
 #' @export
 #'
 plotlyROC <- function(d, predCol, outcomeCol, outcomeTarget, title,
-                      ...) {
+                      ...,
+                      estimate_sig = FALSE) {
   if(!(requireNamespace("plotly", quietly = TRUE))) {
-    return("WVPlots::plotlyROC requires the plotly package be installed")
+    stop("WVPlots::plotlyROC requires the plotly package be installed")
   }
-  checkArgs(frame=d,xvar=predCol,yvar=outcomeCol,title=title,...)
+  d <- check_frame_args_list(...,
+                             frame = d,
+                             name_var_list = list(predCol = predCol, outcomeCol = outcomeCol),
+                             title = title,
+                             funname = "WVPlots::plotlyROC")
   prediction <- d[[predCol]]
   if(!is.numeric(prediction)) {
     stop("WVPlots:plotlyROC prediction must be numeric")
   }
   outcome <- d[[outcomeCol]]==outcomeTarget
-  rocFrame <- WVPlots::graphROC(prediction,
-                                outcome)
+  rocFrame <- graphROC(prediction, outcome)
+
+  palletName = "Dark2"
 
   auc <- rocFrame$area
   returnScores=FALSE
   nrep=100
   parallelCluster=NULL
-  aucsig <- sigr::permutationScoreModel(modelValues=prediction,
-                                        yValues=outcome,
-                                        scoreFn=sigr::calcAUC,
-                                        returnScores=returnScores,
-                                        nRep=nrep,
-                                        parallelCluster=parallelCluster)
-  palletName = "Dark2"
-  pString <- sigr::render(sigr::wrapSignificance(aucsig$pValue),format='ascii')
-  aucString <- sprintf('%.2g',auc)
-  subtitle = paste0(
-    'AUC=',aucString,
-    '\n</br>alt. hyp.: AUC(',predCol,')>permuted AUC, ',
-    pString)
+  aucsig <- NULL
+  pString <- NULL
+  aucString <- NULL
+  subtitle <- NULL
+  if(estimate_sig) {
+    aucsig <- sigr::permutationScoreModel(modelValues=prediction,
+                                          yValues=outcome,
+                                          scoreFn=sigr::calcAUC,
+                                          returnScores=returnScores,
+                                          nRep=nrep,
+                                          parallelCluster=parallelCluster)
+    pString <- sigr::render(sigr::wrapSignificance(aucsig$pValue),format='ascii')
+    aucString <- sprintf('%.2g',auc)
+    subtitle = paste0(
+      'AUC=',aucString,
+      '\n</br>alt. hyp.: AUC(',predCol,')>permuted AUC, ',
+      pString)
+  } else {
+    aucString <- sprintf('%.2g',auc)
+    subtitle <- paste0('AUC=', aucString)
+  }
 
   # see https://plot.ly/r/text-and-annotations/
   plotly::plot_ly(rocFrame$pointGraph,
@@ -427,7 +525,7 @@ plotlyROC <- function(d, predCol, outcomeCol, outcomeTarget, title,
                                 '</br>True Positive Rate:', TruePositiveRate)) ->.;
     plotly::layout(., title = paste(title,
                                     '\n</br>',
-                                    outcomeCol, '==', outcomeTarget, ' ~ ', predCol, ', ',
+                                    outcomeCol, '==', outcomeTarget, ' ~ ', predCol,
                                     '\n</br>', subtitle))
 }
 

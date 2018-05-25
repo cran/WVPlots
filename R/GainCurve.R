@@ -77,15 +77,34 @@ thin_frame_by_orders <- function(d, cols, groupcol, large_count) {
   d[takes, , drop = FALSE]
 }
 
-#' Plot the gain curve of a sort-order.
+#' Plot the cumulative gain curve of a sort-order.
+#'
+#' Plot the cumulative gain curve of a sort-order.
+#'
+#' The use case for this visualization is to compare a predictive model
+#' score to an actual outcome (either binary (0/1) or continuous). In this case the
+#' gain curve plot measures how well the model score sorts the data compared
+#' to the true outcome value.
+#'
+#' The x-axis represents the fraction of items seen when sorted by score, and the
+#' y-axis represents the cumulative summed true outcome represented by the items seen so far.
+#' See, for example,
+#' \url{https://www.ibm.com/support/knowledgecenter/SSLVMB_24.0.0/spss/tutorials/mlp_bankloan_outputtype_02.html}.
+#'
+#' For comparison, \code{GainCurvePlot} also plots the "wizard curve": the gain curve when the
+#' data is sorted according to its true outcome.
+#'
+#' To improve presentation quality, the plot is limited to approximately \code{large_count} points (default: 1000).
+#' For larger data sets, the data is appropriately randomly sampled down before plotting.
+#'
 #'
 #' @param frame data frame to get values from
-#' @param xvar name of the independent (input or model) column in frame
+#' @param xvar name of the independent (input or model score) column in frame
 #' @param truthVar name of the dependent (output or result to be modeled) column in frame
 #' @param title title to place on plot
 #' @param ...  no unnamed argument, added to force named binding of later arguments.
-#' @param compute_sig logical, if TRUE compute significance.
-#' @param large_count numeric, number of plotting points to consider large (and cut down).
+#' @param estimate_sig logical, if TRUE compute significance.
+#' @param large_count numeric, upper bound target for number of plotting points
 #' @examples
 #'
 #' set.seed(34903490)
@@ -102,15 +121,13 @@ thin_frame_by_orders <- function(d, cols, groupcol, large_count) {
 #' @export
 GainCurvePlot = function(frame, xvar, truthVar, title,
                          ...,
-                         compute_sig = TRUE,
+                         estimate_sig = FALSE,
                          large_count = 1000) {
-  checkArgs(
-    frame = frame,
-    xvar = xvar,
-    yvar = truthVar,
-    title = title,
-    ...
-  )
+  frame <- check_frame_args_list(...,
+                                 frame = frame,
+                                 name_var_list = list(xvar = xvar, truthVar = truthVar),
+                                 title = title,
+                                 funname = "WVPlots::GainCurvePlot")
   pctpop <- NULL # used as a symbol, declare not an unbound variable
   pct_outcome <-
     NULL # used as a symbol, declare not an unbound variable
@@ -164,7 +181,7 @@ GainCurvePlot = function(frame, xvar, truthVar, title,
   modelKey = names(colorKey)[[1]]
 
   pString <- ''
-  if(compute_sig && requireNamespace('sigr', quietly = TRUE)) {
+  if(estimate_sig && requireNamespace('sigr', quietly = TRUE)) {
     sp <-
       sigr::permutationScoreModel(predcol, truthcol, relativeGiniScore)
     pString <-
@@ -293,17 +310,34 @@ makeRelativeGiniCostScorer <- function(costcol) {
   }
 }
 
-
-#' Plot the gain curve of a sort-order with costs.
+#' Plot the cumulative gain curve of a sort-order with costs.
+#'
+#' Plot the cumulative gain curve of a sort-order with costs.
+#'
+#' \code{GainCurvePlotC} plots a cumulative gain curve for the case where
+#' items have an additional cost, in addition to an outcome value.
+#'
+#' The x-axis represents the fraction of total cost experienced when items are sorted by score, and the
+#' y-axis represents the cumulative summed true outcome represented by the items seen so far.
+#'
+#' For comparison, \code{GainCurvePlotC} also plots the "wizard curve": the gain curve when the
+#' data is sorted according to its true outcome/cost (the optimal sort order).
+#'
+#' To improve presentation quality, the plot is limited to approximately \code{large_count} points (default: 1000).
+#' For larger data sets, the data is appropriately randomly sampled down before plotting.
+#'
 #'
 #' @param frame data frame to get values from
-#' @param xvar name of the independent (input or model) column in frame
+#' @param xvar name of the independent (input or model score) column in frame
 #' @param costVar cost of each item (drives x-axis sum)
 #' @param truthVar name of the dependent (output or result to be modeled) column in frame
 #' @param title title to place on plot
 #' @param ...  no unnamed argument, added to force named binding of later arguments.
-#' @param compute_sig logical, if TRUE compute significance
-#' @param large_count numeric, number of plotting points to consider large (and cut down).
+#' @param estimate_sig logical, if TRUE compute significance
+#' @param large_count numeric, upper bound target for number of plotting points
+#'
+#' @seealso \code{\link{GainCurvePlot}}
+#'
 #' @examples
 #'
 #' set.seed(34903490)
@@ -320,15 +354,13 @@ makeRelativeGiniCostScorer <- function(costcol) {
 #' @export
 GainCurvePlotC = function(frame, xvar, costVar, truthVar, title,
                           ...,
-                          compute_sig = TRUE,
+                          estimate_sig = FALSE,
                           large_count = 1000) {
-  checkArgs(
-    frame = frame,
-    xvar = xvar,
-    yvar = truthVar,
-    title = title,
-    ...
-  )
+  frame <- check_frame_args_list(...,
+                                 frame = frame,
+                                 name_var_list = list(xvar = xvar, costVar= costVar, truthVar = truthVar),
+                                 title = title,
+                                 funname = "WVPlots::GainCurvePlotC")
   pctpop <- NULL # used as a symbol, declare not an unbound variable
   pct_outcome <-
     NULL # used as a symbol, declare not an unbound variable
@@ -380,7 +412,7 @@ GainCurvePlotC = function(frame, xvar, costVar, truthVar, title,
   results[["sort_criterion"]] = names(colorKey)[results[["sort_criterion"]]]
 
   pString <- ''
-  if (compute_sig && requireNamespace('sigr', quietly = TRUE)) {
+  if (estimate_sig && requireNamespace('sigr', quietly = TRUE)) {
     relativeGiniCostScorer <- makeRelativeGiniCostScorer(costcol)
     sp <-
       sigr::permutationScoreModel(predcol, truthcol, relativeGiniCostScorer)
@@ -484,17 +516,27 @@ get_gainy = function(frame, xvar, truthVar, gainx) {
   round(100 * truth_topN / totalY) / 100  # two sig figs
 }
 
-#' Take the standard WVPlots gain curve and add extra notation
+#' Plot the cumulative gain curve of a sort-order with extra notation
+#'
+#' Plot the cumulative gain curve of a sort-order with extra notation.
+#'
+#' This is the standard gain curve plot (see \code{\link{GainCurvePlot}}) with
+#' a label attached to a particular value of x. The label is created by
+#' a function \code{labelfun}, which takes as inputs the x and y coordinates
+#' of a label and returns a string (the label).
 #'
 #' @param frame data frame to get values from
-#' @param xvar name of the independent (input or model) column in frame
+#' @param xvar name of the independent (input or model score) column in frame
 #' @param truthVar name of the dependent (output or result to be modeled) column in frame
 #' @param title title to place on plot
 #' @param gainx the point on the x axis corresponding to the desired label
 #' @param labelfun a function to return a label for the marked point
 #' @param ...  no unarmed argument, added to force named binding of later arguments.
-#' @param compute_sig logical, if TRUE compute significance
-#' @param large_count numeric, number of plotting points to consider large (and cut down).
+#' @param estimate_sig logical, if TRUE compute significance
+#' @param large_count numeric, upper bound target for number of plotting points
+#'
+#' @seealso \code{\link{GainCurvePlot}}
+#'
 #' @examples
 #'
 #' set.seed(34903490)
@@ -526,19 +568,17 @@ GainCurvePlotWithNotation = function(frame,
                                      gainx,
                                      labelfun,
                                      ...,
-                                     compute_sig = TRUE,
+                                     estimate_sig = FALSE,
                                      large_count = 1000) {
-   checkArgs(
-    frame = frame,
-    xvar = xvar,
-    yvar = truthVar,
-    title = title,
-    ...
-  )
+   frame <- check_frame_args_list(...,
+                                 frame = frame,
+                                 name_var_list = list(xvar = xvar, truthVar = truthVar),
+                                 title = title,
+                                 funname = "WVPlots::GainCurvePlotWithNotation")
   gainy = get_gainy(frame, xvar, truthVar, gainx)
   label = labelfun(gainx, gainy)
   gp = GainCurvePlot(frame, xvar, truthVar, title,
-                     compute_sig = compute_sig,
+                     estimate_sig = estimate_sig,
                      large_count = large_count) +
     ggplot2::geom_vline(xintercept = gainx,
                         color = "red",

@@ -6,28 +6,44 @@
 #' @importFrom wrapr DebugPrintFn let
 NULL
 
-# check the arguments are the types our functions commonly expect
-checkArgs <- function(frame,xvar,yvar,title, ...) {
-  wrapr::stop_if_dot_args(substitute(list(...)), "WVPlots")
+
+#' Check arguments are good for plotting and narrow data frame to only named columns.
+#'
+#' @param ... should be empty, force later arguments to bind by name.
+#' @param frame data.frame to work with.
+#' @param name_var_list named list, mapping expected columns to column names used by user.
+#' @param title character title for plot.
+#' @param funname name of function to use in error messages.
+#' @return narrowed data.frame
+#'
+#' @noRd
+check_frame_args_list <- function(...,
+                            frame, name_var_list, title,
+                            funname = "WVPlots") {
+  wrapr::stop_if_dot_args(substitute(list(...)), funname)
+  frame_name <- deparse(substitute(frame))
+  xvar_name <- deparse(substitute(xvar))
+  yvar_name <- deparse(substitute(yvar))
+  title_name <- deparse(substitute(title))
   if(missing(frame)||(!is.data.frame(frame))||(nrow(frame)<0)||(ncol(frame)<=0)) {
-    stop("frame must be a non-empty data frame")
+    stop(paste0(funname, ": data.frame argument ", frame_name, " must be a non-empty data frame"))
   }
   if(missing(title)||(!is.character(title))||(length(title)!=1)) {
-    stop("title must be a length 1 character vector")
+    stop(paste0(funname, ": argument ", title_name, " must be set and a length 1 character vector"))
   }
-  if(missing(xvar)||(!is.character(xvar))||(length(xvar)!=1)) {
-    stop("xvar must be a length 1 character vector")
+  for(ni in names(name_var_list)) {
+    vi <- name_var_list[[ni]]
+    if((!is.character(vi))||(length(vi)!=1)) {
+      stop(paste0(funname, ": ", ni, " argument must be set and a length 1 character vector"))
+    }
+    if(!(vi %in% colnames(frame))) {
+      stop(paste0(funname, ": ", ni, " argument (value: \"", vi ,"\") must be the name of a column in data.frame ", frame_name))
+    }
   }
-  if(missing(yvar)||(!is.character(yvar))||(length(yvar)!=1)) {
-    stop("yvar must be a length 1 character vector")
-  }
-  if(!(xvar %in% colnames(frame))) {
-    stop("xvar must be the name of a column in frame")
-  }
-  if(!(yvar %in% colnames(frame))) {
-    stop("yvar must be the name of a column in frame")
-  }
+  # return frame narrowed to named columns
+  as.data.frame(frame[, as.character(name_var_list), drop = FALSE])
 }
+
 
 # Curry without leaking
 padToK <- function(k) {
@@ -50,22 +66,56 @@ padToK <- function(k) {
 # get the y lables from a ready to go ggplot2
 getYLabs <- function(p) {
   info <- ggplot2::ggplot_build(p)
-  origlabs <- info$panel$ranges[[1]]$y.labels  # worked prior to ggplot2.2.0
+  origlabs <- NULL
+  tryCatch(
+    # ggplot2 version 2.2.1.9000
+    origlabs <- info$layout$panel_params[[1]]$y.label,
+    error = function(e) {NULL}
+  )
   if(!is.null(origlabs)) {
     return(origlabs)
   }
-  origlabs <- info$layout$panel_ranges[[1]]$y.labels
+  tryCatch(
+    # ggplot2 version 2.2.0
+    origlabs <- info$layout$panel_ranges[[1]]$y.labels,
+    error = function(e) {NULL}
+  )
+  if(!is.null(origlabs)) {
+    return(origlabs)
+  }
+  tryCatch(
+    # ggplot2 prior to version 2.2.0
+    origlabs <- info$panel$ranges[[1]]$y.labels,
+    error = function(e) {NULL}
+  )
   origlabs
 }
 
 # get the x lables from a ready to go ggplot2
 getXLabs <- function(p) {
   info <- ggplot2::ggplot_build(p)
-  origlabs <- info$panel$ranges[[1]]$x.labels  # worked prior to ggplot2.2.0
+  origlabs <- NULL
+  tryCatch(
+    # ggplot2 version 2.2.1.9000
+    origlabs <- info$layout$panel_params[[1]]$x.label,
+    error = function(e) {NULL}
+  )
   if(!is.null(origlabs)) {
     return(origlabs)
   }
-  origlabs <- info$layout$panel_ranges[[1]]$x.labels
+  tryCatch(
+    # ggplot2 version 2.2.0
+    origlabs <- info$layout$panel_ranges[[1]]$x.labels,
+    error = function(e) {NULL}
+  )
+  if(!is.null(origlabs)) {
+    return(origlabs)
+  }
+  tryCatch(
+    # ggplot2 prior to version 2.2.0
+    origlabs <- info$panel$ranges[[1]]$x.labels,
+    error = function(e) {NULL}
+  )
   origlabs
 }
 

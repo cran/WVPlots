@@ -2,11 +2,11 @@
 % Please edit documentation in R/ROC.R
 \name{ROCPlotPair2}
 \alias{ROCPlotPair2}
-\title{Plot two receiver operating characteristic plots from unrelated frames.}
+\title{Compare two ROC plots.}
 \usage{
 ROCPlotPair2(nm1, frame1, xvar1, truthVar1, truthTarget1, nm2, frame2, xvar2,
-  truthVar2, truthTarget2, title, ..., returnScores = FALSE, nrep = 100,
-  parallelCluster = NULL)
+  truthVar2, truthTarget2, title, ..., estimate_sig = TRUE,
+  returnScores = FALSE, nrep = 100, parallelCluster = NULL)
 }
 \arguments{
 \item{nm1}{name of first model}
@@ -33,6 +33,8 @@ ROCPlotPair2(nm1, frame1, xvar1, truthVar1, truthTarget1, nm2, frame2, xvar2,
 
 \item{...}{no unnamed argument, added to force named binding of later arguments.}
 
+\item{estimate_sig}{logical, if TRUE estimate and display significance of difference from AUC 0.5.}
+
 \item{returnScores}{logical if TRUE return detailed permutedScores}
 
 \item{nrep}{number of permutation repititions to estimate p values.}
@@ -40,7 +42,11 @@ ROCPlotPair2(nm1, frame1, xvar1, truthVar1, truthTarget1, nm2, frame2, xvar2,
 \item{parallelCluster}{(optional) a cluster object created by package parallel or package snow.}
 }
 \description{
-Plot two receiver operating characteristic plots from unrelated frames.
+Plot two receiver operating characteristic curves from different data frames.
+}
+\details{
+Use this curve to compare model predictions to true outcome from two
+data frames, each of which has its own model predictions and true outcome columns.
 }
 \examples{
 
@@ -53,6 +59,9 @@ frm = data.frame(x1=x1,x2=x2,yC=y>=as.numeric(quantile(y,probs=0.8)))
 # WVPlots::ROCPlot(frm, "x2", "yC", TRUE, title="Example ROC plot")
 WVPlots::ROCPlotPair2('train',frm, "x1", "yC", TRUE,
                       'test', frm, "x2", "yC", TRUE,
-                      title="Example ROC pair plot")
+                      title="Example ROC pair plot", estimate_sig = TRUE)
 
+}
+\seealso{
+\code{\link{ROCPlot}}
 }

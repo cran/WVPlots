@@ -1,7 +1,7 @@
 
 
 
-#' calculate precision/recall curve.
+#' Calculate precision/recall curve.
 #'
 #' Based on:
 #'  http://blog.revolutionanalytics.com/2016/08/roc-curves-in-two-lines-of-code.html
@@ -11,6 +11,8 @@
 #' @param modelPredictions numeric predictions (not empty)
 #' @param yValues logical truth (not empty, same lenght as model predictions)
 #' @return line graph, point graph, and summaries
+#'
+#' @noRd
 #'
 calcPR <- function(modelPredictions,yValues) {
   prevalence = mean(yValues)
@@ -49,7 +51,13 @@ calcPR <- function(modelPredictions,yValues) {
 
 #' Plot Precision-Recall plot.
 #'
-#' See http://www.nature.com/nmeth/journal/v13/n8/full/nmeth.3945.html
+#' Plot Precision-Recall plot.
+#'
+#' See http://www.nature.com/nmeth/journal/v13/n8/full/nmeth.3945.html for a discussion of precision and recall,
+#' and how the precision/recall plot relates to the ROC plot.
+#'
+#' In addition to plotting precision versus recall, \code{PRPlot} reports the best
+#' achieved F1 score, and plots an isoline corresponding to that F1 score.
 #'
 #' @param frame data frame to get values from
 #' @param xvar name of the independent (input or model) column in frame
@@ -57,6 +65,10 @@ calcPR <- function(modelPredictions,yValues) {
 #' @param truthTarget value we consider to be positive
 #' @param title title to place on plot
 #' @param ...  no unnamed argument, added to force named binding of later arguments.
+#' @param estimate_sig logical, if TRUE compute significance
+#'
+#' @seealso \code{\link{ROCPlot}}
+#'
 #' @examples
 #'
 #' set.seed(34903490)
@@ -69,8 +81,14 @@ calcPR <- function(modelPredictions,yValues) {
 #' WVPlots::PRPlot(frm, "x", "yC", TRUE, title="Example Precision-Recall plot")
 #'
 #' @export
-PRPlot <- function(frame, xvar, truthVar, truthTarget, title,...) {
-  checkArgs(frame=frame,xvar=xvar,yvar=truthVar,title=title,...)
+PRPlot <- function(frame, xvar, truthVar, truthTarget, title,
+                   ...,
+                   estimate_sig = FALSE) {
+  frame <- check_frame_args_list(...,
+                                 frame = frame,
+                                 name_var_list = list(xvar = xvar, truthVar = truthVar),
+                                 title = title,
+                                 funname = "WVPlots::PRPlot")
   outcol <- frame[[truthVar]]==truthTarget
   if(length(unique(outcol))!=2) {
     return(NULL)
@@ -93,7 +111,7 @@ PRPlot <- function(frame, xvar, truthVar, truthTarget, title,...) {
   #f1check <- 2*isoFrame$Recall*isoFrame$Precision/(isoFrame$Recall+isoFrame$Precision)
 
   pString <- ''
-  if(requireNamespace('sigr',quietly = TRUE)) {
+  if(estimate_sig && requireNamespace('sigr',quietly = TRUE)) {
     sp <- sigr::permutationScoreModel(predcol,outcol,
                                       function(modelValues,yValues) {
                                         calcPR(modelValues,yValues)$bestF1

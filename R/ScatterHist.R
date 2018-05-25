@@ -6,15 +6,40 @@
 #' @importFrom mgcv gam
 NULL
 
-#' Plot a scatter plot with marginals.  xvar is the independent variable (input or model) and yvar is the dependent variable
+#' Plot a scatter plot with marginals.
+#'
+#' Plot a scatter plot with optional smoothing curves or contour lines, and marginal histogram/density plots.
+#'
+#' If \code{smoothmethod} is:
+#' \itemize{
+#' \item  'auto', 'loess' or 'gam':  the appropriate smoothing curve is added to the scatterplot.
+#' \item 'lm' (the default): the best fit line is added to the scatterplot.
+#' \item 'identity':  the line x = y is added to the scatterplot. This is useful for comparing model predictions to true outcome.
+#' \item 'none': no smoothing line is added to the scatterplot.
+#' }
+#'
+#' If \code{estimate_sig} is TRUE and \code{smoothmethod} is:
+#' \itemize{
+#' \item 'lm': the R-squared of the linear fit is reported.
+#' \item  'identity': the R-squared of the exact relation between \code{xvar} and \code{yvar} is reported.
+#' }
+#'
+#' Note that the identity R-squared is NOT the square of the correlation between \code{xvar} and \code{yvar}
+#' (which includes an implicit shift and scale). It is the coefficient of determination between \code{xvar} and
+#' \code{yvar}, and can be negative. See \url{https://en.wikipedia.org/wiki/Coefficient_of_determination} for more details.
+#' If \code{xvar} is the output of a model to predict \code{yvar}, then the identity R-squared, not the lm R-squared,
+#' is the correct measure.
+#'
+#' If \code{smoothmethod} is neither 'lm' or 'identity' then \code{estimate_sig} is ignored.
+#'
 #'
 #' @param frame data frame to get values from
 #' @param xvar name of the independent (input or model) column in frame
 #' @param yvar name of the dependent (output or result to be modeled) column in frame
 #' @param title title to place on plot
 #' @param ...  no unnamed argument, added to force named binding of later arguments.
-#' @param smoothmethod (optional) one of 'auto' (the default), 'loess', 'gam', 'lm', or 'identity'.  If smoothmethod is 'auto' or 'lm' a smoothing curve or line (respectively) is added and R-squared of the best linear fit of xvar to yvar is reported.  If smoothmethod is 'identity' then the y=x line is added and the R-squared of xvar to yvar (without the linear transform used in the other smoothmethod modes) is reported.
-#' @param annot_size numeric scale annotation text (if present)
+#' @param smoothmethod (optional) one of 'auto', 'loess', 'gam', 'lm', or 'identity'.
+#' @param estimate_sig logical if TRUE and smoothmethod is 'identity' or 'lm', report goodness of fit and significance of relation.
 #' @param minimal_labels logical drop some annotations
 #' @param binwidth_x  numeric binwidth for x histogram
 #' @param binwidth_y  numeric binwidth for y histogram
@@ -28,13 +53,15 @@ NULL
 #' x = rnorm(50)
 #' y = 0.5*x^2 + 2*x + rnorm(length(x))
 #' frm = data.frame(x=x,y=y)
-#' WVPlots::ScatterHist(frm, "x", "y", title="Example Fit",
+#' WVPlots::ScatterHist(frm, "x", "y",
+#'   title= "Example Fit",
+#'   smoothmethod = "gam",
 #'   contour = TRUE)
 #'
 #' @export
-ScatterHist = function(frame, xvar, yvar,title, ...,
-                       smoothmethod="auto", # only works for 'auto', 'loess', 'gam', 'lm', and 'identity'
-                       annot_size=5,
+ScatterHist = function(frame, xvar, yvar, title, ...,
+                       smoothmethod="lm", # only works for 'auto', 'loess', 'gam', 'lm', 'none' and 'identity'
+                       estimate_sig=FALSE,
                        minimal_labels = TRUE,
                        binwidth_x = NULL,
                        binwidth_y = NULL,
@@ -46,13 +73,30 @@ ScatterHist = function(frame, xvar, yvar,title, ...,
      (!requireNamespace("gridExtra", quietly = TRUE))) {
     return("WVPlots::ScatterHist requires the grid and gridExtra packages be installed")
   }
-  checkArgs(frame=frame,xvar=xvar,yvar=yvar,title=title,...)
-  if(!(smoothmethod %in% c('auto','loess','gam','lm','identity'))) {
-    stop("smoothed method must be one of 'auto','lm', or 'identity'")
+  frame <- check_frame_args_list(...,
+                                 frame = frame,
+                                 name_var_list = list(xvar = xvar, yvar = yvar),
+                                 title = title,
+                                 funname = "WVPlots::ScatterHist")
+  if(!(smoothmethod %in% c('auto','loess','gam','lm', 'none', 'identity'))) {
+    stop("smoothed method must be one of 'auto','lm','none', or 'identity'")
   }
   frame <- frame[, c(xvar,yvar), drop=FALSE]
   frame <- frame[complete.cases(frame), , drop=FALSE]
   ..density.. <- NULL # used as a symbol, declare not an unbound variable
+
+  if(estimate_sig && (smoothmethod %in% c("identity", "lm"))) {
+    if(smoothmethod=='identity') {
+      sig <- sigr::wrapFTest(frame, xvar, yvar, format = "ascii")
+      title <- paste0(title, "\nidentity relation: ", format(sig))
+    }
+    if(smoothmethod=='lm') {
+      f <- paste(xvar, "~", yvar)
+      lmm <- lm(as.formula(f), data = frame)
+      sig <- sigr::wrapFTest(lmm, format = "ascii")
+      title <- paste0(title, "\nlinear relation: ", format(sig))
+    }
+  }
 
   # placeholder plot - prints nothing at all
   empty =  ggplot2::ggplot() +
@@ -70,37 +114,12 @@ ScatterHist = function(frame, xvar, yvar,title, ...,
           plot.margin = grid::unit(c(1, 1, 0, 0), "lines"))
 
   # if we are showing a linear fit, print the fit's parameters
-  origTitle <- title
-  if(requireNamespace('sigr',quietly = TRUE)) {
-    title <- paste0(origTitle,'\nData: ',
-                   sigr::render(sigr::wrapFTest(frame,xvar,yvar),format='ascii'))
-  }
   gSmooth = NULL
-  if(smoothmethod=='identity') {
-    meanY = mean(frame[[yvar]])
-    rsqr = 1 - sum((frame[[yvar]]-frame[[xvar]])^2)/sum((frame[[yvar]]-meanY)^2)
-    fitstring = paste("R-squared = ", format(rsqr, digits=3))
-
-    gSmooth = ggplot2::geom_abline(slope=1,linetype=2,color='blue')
-  } else {
-    tryCatch({
-      # get goodness of linear relation
-      model = lm(paste(yvar,"~",xvar), data=frame)
-      fstat = summary(model)$fstatistic
-      rsqr = summary(model)$r.squared
-      pval = pf(fstat[["value"]], fstat[["numdf"]], fstat[["dendf"]], lower.tail=FALSE)
-
-      # print(summary(model))
-      fitstring = paste("R-squared = ", format(rsqr, digits=3))
-      sigstring = paste("Significance = ", format(pval, digits=3))
-    },
-    error=function(x){}
-    )
-    gSmooth = ggplot2::geom_smooth(method=smoothmethod)
-    title <- origTitle
-    if(requireNamespace('sigr',quietly = TRUE)) {
-      title <- paste0(origTitle,'\nlm: ',
-                      sigr::render(sigr::wrapFTest(model),format='ascii'))
+  if(smoothmethod != 'none') {
+    if(smoothmethod=='identity') {
+      gSmooth = ggplot2::geom_abline(slope=1,linetype=2,color='blue')
+    } else {
+      gSmooth = ggplot2::geom_smooth(method=smoothmethod, se=FALSE)
     }
   }
 
@@ -176,7 +195,7 @@ ScatterHist = function(frame, xvar, yvar,title, ...,
     ggplot2::geom_histogram(ggplot2::aes(y=..density..), fill="gray",
                             color="white", binwidth=binwidth_y, bins=30) +
     ggplot2::geom_line(stat='density',color="blue", adjust=adjust_y) +
-    ggplot2::coord_cartesian(xlim=ylims) +
+    # ggplot2::coord_cartesian(xlim=ylims) + # causes a warning with ggplot2 2.2.1.9000
     ggplot2::scale_x_continuous(expand = c(0,0)) + # , breaks= yBreaks) +
     ggplot2::coord_flip(xlim=ylims, expand = 0) # see: https://github.com/tidyverse/ggplot2/issues/2013
   if(minimal_labels) {

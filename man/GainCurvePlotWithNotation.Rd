@@ -2,15 +2,15 @@
 % Please edit documentation in R/GainCurve.R
 \name{GainCurvePlotWithNotation}
 \alias{GainCurvePlotWithNotation}
-\title{Take the standard WVPlots gain curve and add extra notation}
+\title{Plot the cumulative gain curve of a sort-order with extra notation}
 \usage{
 GainCurvePlotWithNotation(frame, xvar, truthVar, title, gainx, labelfun, ...,
-  compute_sig = TRUE, large_count = 1000)
+  estimate_sig = FALSE, large_count = 1000)
 }
 \arguments{
 \item{frame}{data frame to get values from}
 
-\item{xvar}{name of the independent (input or model) column in frame}
+\item{xvar}{name of the independent (input or model score) column in frame}
 
 \item{truthVar}{name of the dependent (output or result to be modeled) column in frame}
 
@@ -22,12 +22,18 @@ GainCurvePlotWithNotation(frame, xvar, truthVar, title, gainx, labelfun, ...,
 
 \item{...}{no unarmed argument, added to force named binding of later arguments.}
 
-\item{compute_sig}{logical, if TRUE compute significance}
+\item{estimate_sig}{logical, if TRUE compute significance}
 
-\item{large_count}{numeric, number of plotting points to consider large (and cut down).}
+\item{large_count}{numeric, upper bound target for number of plotting points}
 }
 \description{
-Take the standard WVPlots gain curve and add extra notation
+Plot the cumulative gain curve of a sort-order with extra notation.
+}
+\details{
+This is the standard gain curve plot (see \code{\link{GainCurvePlot}}) with
+a label attached to a particular value of x. The label is created by
+a function \code{labelfun}, which takes as inputs the x and y coordinates
+of a label and returns a string (the label).
 }
 \examples{
 
@@ -52,4 +58,7 @@ WVPlots::GainCurvePlotWithNotation(frm, "model", "value",
    title="Example Gain Curve with annotation",
    gainx=gainx,labelfun=labelfun)
 
+}
+\seealso{
+\code{\link{GainCurvePlot}}
 }

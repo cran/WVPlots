@@ -7,10 +7,13 @@ is_integral = function(x) {
   return(sum(xint != x)==0)
 }
 
-#' Plot distribution of a single continuous variable.
+#' Plot distribution of a single discrete numerical variable.
+#'
+#' Similar to calling \code{ClevelandDotPlot} with \code{sort = 0} on a numerical x variable that
+#' takes on a discrete set of values.
 #'
 #' @param frm data frame to get values from
-#' @param xvar name of the independent (input or model) column in frame
+#' @param xvar numeric: name of the variable whose distribution is to be plotted
 #' @param title title to place on plot
 #' @param ...  no unnamed argument, added to force named binding of later arguments.
 #' @param stem if TRUE add whisker/stems to plot
@@ -22,7 +25,11 @@ is_integral = function(x) {
 #' @export
 DiscreteDistribution = function(frm, xvar, title, ...,
                                 stem=TRUE) {
-  checkArgs(frame=frm,xvar=xvar,yvar=xvar,title=title,...)
+  frm <- check_frame_args_list(...,
+                               frame = frm,
+                               name_var_list = list(xvar = xvar),
+                               title = title,
+                               funname = "WVPlots::DiscreteDistribution")
   if(!is_integral(frm[[xvar]])) {
     stop(paste("Column", xvar, "must have integer values"))
   }

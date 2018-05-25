@@ -1,8 +1,18 @@
 
+# WVPlots 1.0.0 2018-05-24
+
+ * Added hexbin plot
+ * Prepare for next ggplot2 version
+ * Added shadow plot.
+ * Improve argument checking.
+ * Add frame narrowing.
+ * Make significance tests user selectable.
+ * Clean up F-test in ScatterHist.
+ 
 # WVPlots 0.3.2 2018-05-07
 
  * Remove RSQLite dependence.
- * Report F-test on linear fit in more case in ScaterHist.
+ * Report F-test on linear fit in more cases in ScatterHist.
  
 # WVPlots 0.3.1 2018-04-03
 
@@ -59,7 +69,7 @@
 
  * Fix warnings.
  * Improve Imports/Depends/Suggests.
- * Fix smoothing bug in BinearyYScatterPlot.
+ * Fix smoothing bug in BinaryYScatterPlot.
  
 # WVPlots 0.2.0 2017-01-15
 

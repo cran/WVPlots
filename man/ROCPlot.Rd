@@ -4,8 +4,8 @@
 \alias{ROCPlot}
 \title{Plot receiver operating characteristic plot.}
 \usage{
-ROCPlot(frame, xvar, truthVar, truthTarget, title, ..., returnScores = FALSE,
-  nrep = 100, parallelCluster = NULL)
+ROCPlot(frame, xvar, truthVar, truthTarget, title, ..., estimate_sig = FALSE,
+  returnScores = FALSE, nrep = 100, parallelCluster = NULL)
 }
 \arguments{
 \item{frame}{data frame to get values from}
@@ -20,6 +20,8 @@ ROCPlot(frame, xvar, truthVar, truthTarget, title, ..., returnScores = FALSE,
 
 \item{...}{no unnamed argument, added to force named binding of later arguments.}
 
+\item{estimate_sig}{logical, if TRUE estimate and display significance of difference from AUC 0.5.}
+
 \item{returnScores}{logical if TRUE return detailed permutedScores}
 
 \item{nrep}{number of permutation repititions to estimate p values.}
@@ -29,12 +31,20 @@ ROCPlot(frame, xvar, truthVar, truthTarget, title, ..., returnScores = FALSE,
 \description{
 Plot receiver operating characteristic plot.
 }
+\details{
+See http://www.nature.com/nmeth/journal/v13/n8/full/nmeth.3945.html for a discussion of
+true positive and false positive rates,
+and how the ROC plot relates to the precision/recall plot.
+}
 \examples{
 
 set.seed(34903490)
 x = rnorm(50)
 y = 0.5*x^2 + 2*x + rnorm(length(x))
 frm = data.frame(x=x,yC=y>=as.numeric(quantile(y,probs=0.8)))
-WVPlots::ROCPlot(frm, "x", "yC", TRUE, title="Example ROC plot")
+WVPlots::ROCPlot(frm, "x", "yC", TRUE, title="Example ROC plot", estimate_sig = TRUE)
 
+}
+\seealso{
+\code{\link{PRPlot}}
 }

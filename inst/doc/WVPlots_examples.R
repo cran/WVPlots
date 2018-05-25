@@ -14,11 +14,11 @@ WVPlots::ScatterHist(frm, "x", "y", title="Example Fit")
 
 ## ------------------------------------------------------------------------
 WVPlots::ScatterHist(frm, "x", "y", smoothmethod="lm", 
-                     title="Example Linear Fit", annot_size=2)
+                     title="Example Linear Fit", estimate_sig = TRUE)
 
 ## ------------------------------------------------------------------------
 WVPlots::ScatterHist(frm, "x", "y", smoothmethod="identity", 
-                     title="Example Relation Plot", annot_size=2)
+                     title="Example Relation Plot", estimate_sig = TRUE)
 
 ## ------------------------------------------------------------------------
 set.seed(34903490)
@@ -38,6 +38,17 @@ WVPlots::BinaryYScatterPlot(frm, "x", "posY", use_glm=FALSE,
 
 WVPlots::BinaryYScatterPlot(frm, "x", "posY", use_glm=TRUE, 
                             title="Example 'Probability of Y' Plot (GLM smoothing)")
+
+## ------------------------------------------------------------------------
+if(requireNamespace("hexbin", quietly = TRUE)) {
+  set.seed(5353636)
+  
+  df = rbind(data.frame(x=rnorm(1000, mean = 1), y=rnorm(1000, mean = 1, sd = 0.5 )),
+             data.frame(x = rnorm(1000, mean = -1, sd = 0.5), y = rnorm(1000, mean = -1, sd = 0.5)))
+  
+  print(WVPlots::HexBinPlot(df, "x", "y", "Two gaussians"))
+}
+
 
 ## ------------------------------------------------------------------------
 set.seed(34903490)
@@ -121,6 +132,50 @@ WVPlots::ClevelandDotPlot(randomDraws, "letter", limit_n = 10,  title = "Top 10 
 WVPlots::ClevelandDotPlot(randomDraws, "letter", sort=0, title="Example Cleveland-style dot plot, unsorted")
 WVPlots::ClevelandDotPlot(randomDraws, "letter", sort=1, stem=FALSE, title="Example with increasing sort order + coord_flip, no stem") + ggplot2::coord_flip()
 
+
+## ------------------------------------------------------------------------
+set.seed(34903490)
+N = 1000
+ncar_vec = 0:5
+prob = c(1.5, 3, 3.5, 2, 1, 0.75); prob = prob/sum(prob)
+
+df = data.frame(num_cars = sample(ncar_vec, size = N, replace = TRUE, prob=prob))
+WVPlots::ClevelandDotPlot(df, "num_cars", sort = 0, title = "Distribution of household vehicle ownership")
+              
+
+
+## ------------------------------------------------------------------------
+set.seed(354534)
+N = 100
+
+# rough proportions of eye colors
+eprobs = c(0.37, 0.36, 0.16, 0.11)
+
+eye_color  = sample(c("Brown", "Blue", "Hazel", "Green"), size = N, replace = TRUE, prob = eprobs)
+sex = sample(c("Male", "Female"), size = N, replace = TRUE)
+
+# A data frame of eye color by sex
+dframe = data.frame(eye_color = eye_color, sex = sex)
+
+WVPlots::ShadowPlot(dframe, "eye_color", "sex", title = "Shadow plot of eye colors by sex")
+
+
+## ------------------------------------------------------------------------
+set.seed(354534)
+N = 100
+
+dframe = data.frame(x = rnorm(N), gp = "region 2", stringsAsFactors = FALSE)
+dframe$gp = with(dframe, ifelse(x < -0.5, "region 1", 
+                                ifelse(x > 0.5, "region 3", gp)))
+
+WVPlots::ShadowHist(dframe, "x", "gp", title = "X values by region")
+
+
+## ------------------------------------------------------------------------
+ngp = length(unique(dframe$gp))
+
+WVPlots::ShadowHist(dframe, "x", "gp", title = "X values by region", palette = NULL) + 
+  ggplot2::scale_fill_manual(values = rep("darkblue", ngp))
 
 ## ------------------------------------------------------------------------
 classes = c("a", "b", "c")

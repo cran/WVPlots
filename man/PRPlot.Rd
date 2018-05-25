@@ -4,7 +4,7 @@
 \alias{PRPlot}
 \title{Plot Precision-Recall plot.}
 \usage{
-PRPlot(frame, xvar, truthVar, truthTarget, title, ...)
+PRPlot(frame, xvar, truthVar, truthTarget, title, ..., estimate_sig = FALSE)
 }
 \arguments{
 \item{frame}{data frame to get values from}
@@ -18,9 +18,18 @@ PRPlot(frame, xvar, truthVar, truthTarget, title, ...)
 \item{title}{title to place on plot}
 
 \item{...}{no unnamed argument, added to force named binding of later arguments.}
+
+\item{estimate_sig}{logical, if TRUE compute significance}
 }
 \description{
-See http://www.nature.com/nmeth/journal/v13/n8/full/nmeth.3945.html
+Plot Precision-Recall plot.
+}
+\details{
+See http://www.nature.com/nmeth/journal/v13/n8/full/nmeth.3945.html for a discussion of precision and recall,
+and how the precision/recall plot relates to the ROC plot.
+
+In addition to plotting precision versus recall, \code{PRPlot} reports the best
+achieved F1 score, and plots an isoline corresponding to that F1 score.
 }
 \examples{
 
@@ -33,4 +42,7 @@ frm$posY = frm$y > 0
 frm$costX = 1
 WVPlots::PRPlot(frm, "x", "yC", TRUE, title="Example Precision-Recall plot")
 
+}
+\seealso{
+\code{\link{ROCPlot}}
 }

@@ -4,7 +4,13 @@
 
 #' Plot the trajectory of a model fit.
 #'
-#' Plot a history of fit over a trajetory of times.  Example below gives
+#' Plot a history of model fit performance over the a trajectory of times.
+#'
+#' This visualization can be applied to any staged machine learning algorithm. For example one could
+#' plot the performance of a gradient boosting machine as a function of the number of trees added. The
+#' fit history data should be in the form given in the example below.
+#'
+#' The example below gives
 #' a fit plot for a history report from Keras R package.
 #' Please see \url{http://www.win-vector.com/blog/2017/12/plotting-deep-learning-model-performance-trajectories/}
 #' for some examples and details.
@@ -61,6 +67,12 @@ plot_fit_trajectory <- function(d,
                                 discount_rate = NULL,
                                 draw_ribbon = FALSE,
                                 draw_segments = FALSE) {
+  vlist <- unique(c(epoch_name, as.character(as.matrix(column_description[-1]))))
+  d <- check_frame_args_list(...,
+                        frame = d,
+                        name_var_list = vlist,
+                        title = title,
+                        funname = "WVPlots::plot_fit_trajectory")
   if( (!requireNamespace("cdata", quietly = TRUE)) ) {
     return("WVPlots::plot_fit_trajectory requires the cdata package for data shaping")
   }
@@ -179,10 +191,7 @@ plot_fit_trajectory <- function(d,
 
 #' Plot the trajectory of a Keras model fit.
 #'
-#' Plot a history of fit over a trajetory of times.  Example below gives
-#' a fit plot for a history report from Keras R package.
-#' Please see \url{http://winvector.github.io/FluidData/PlotExample/KerasPerfPlot.html}
-#' for some details.
+#' Plot a history of model fit performance over the number of training epochs.
 #'
 #' @param d data frame to get values from.
 #' @param title character title for plot.
@@ -208,6 +217,11 @@ plot_fit_trajectory <- function(d,
 #' and then draws a vertical line at the minumum validation loss (maximum flipped validation loss).
 #' If you choose not to flip the loss, you should not use the loss as the pick_metric.
 #'
+#' The example below gives
+#' a fit plot for a history report from Keras R package.
+#' Please see \url{http://winvector.github.io/FluidData/PlotExample/KerasPerfPlot.html}
+#' for some details.
+#'
 #' @seealso \link{plot_fit_trajectory}
 #'
 #' @examples
@@ -228,25 +242,30 @@ plot_fit_trajectory <- function(d,
 #' @export
 #'
 plot_Keras_fit_trajectory <- function(d,
-                                title,
-                                ...,
-                                epoch_name = "epoch",
-                                lossname = "loss",
-                                loss_pretty_name = "minus binary cross entropy",
-                                perfname = "acc",
-                                perf_pretty_name = "accuracy",
-                                pick_metric = loss_pretty_name,
-                                fliploss = TRUE,
-                                discount_rate = NULL,
-                                draw_ribbon = FALSE)
-{
-  d[[epoch_name]] <- seq_len(nrow(d))
+                                      title,
+                                      ...,
+                                      epoch_name = "epoch",
+                                      lossname = "loss",
+                                      loss_pretty_name = "minus binary cross entropy",
+                                      perfname = "acc",
+                                      perf_pretty_name = "accuracy",
+                                      pick_metric = loss_pretty_name,
+                                      fliploss = TRUE,
+                                      discount_rate = NULL,
+                                      draw_ribbon = FALSE) {
   val_loss_name = paste("val", lossname, sep="_")
   val_perf_name = paste("val", perfname, sep="_")
+  d[[epoch_name]] <- seq_len(nrow(d))
+  vlist <- unique(c(epoch_name, lossname, perfname, val_loss_name, val_perf_name))
+  d <- check_frame_args_list(...,
+                             frame = d,
+                             name_var_list = vlist,
+                             title = title,
+                             funname = "WVPlots::plot_Keras_fit_trajectory")
   column_description <-  data.frame(
     measure =    c(loss_pretty_name, perf_pretty_name),
     training =   c(lossname,         perfname),
-    validation = c(val_loss_name,     val_perf_name),
+    validation = c(val_loss_name,    val_perf_name),
     stringsAsFactors = FALSE)
   if(fliploss)
    needs_flip <- loss_pretty_name

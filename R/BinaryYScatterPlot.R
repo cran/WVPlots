@@ -1,5 +1,14 @@
 
-#' Plot a scatter plot of a binary variable.  xvar is the continuous independent variable and yvar is the dependent binary variable
+#' Plot a scatter plot of a binary variable with smoothing curve.
+#'
+#' Plot the scatter plot of a binary variable with a smoothing curve.
+#'
+#' The points are jittered for legibility. By default, a logistic regression fit is
+#' used, so that the smoothing curve represents the probability of y == 1 (as fit by
+#' the logistic regression). If
+#' \code{use_glm} is set to FALSE, a standard smoothing curve (either loess or a
+#' spline fit) is used.
+#'
 #'
 #' @param frame data frame to get values from
 #' @param xvar name of the independent column in frame
@@ -25,7 +34,11 @@
 #' @export
 BinaryYScatterPlot = function(frame, xvar, yvar,  title, ...,
                               se=FALSE, use_glm=TRUE) {
-  checkArgs(frame=frame,xvar=xvar,yvar=yvar,title=title,...)
+  frame <- check_frame_args_list(...,
+                                 frame = frame,
+                                 name_var_list = list(xvar = xvar, yvar = yvar),
+                                 title = title,
+                                 funname = "WVPlots::BinaryYScatterPlot")
   frame[[yvar]] = as.numeric(frame[[yvar]])
   if(length(unique(frame[[yvar]])) != 2) stop(paste("outcome column", yvar, "not a binary variable"))
 
