@@ -1,8 +1,13 @@
 
+# WVPlots 1.0.1 2018-07-11
+
+ * narrow interface to sigr.
+ * Documentation fixes.
+
 # WVPlots 1.0.0 2018-05-24
 
- * Added hexbin plot
- * Prepare for next ggplot2 version
+ * Added hexbin plot.
+ * Prepare for next ggplot2 version.
  * Added shadow plot.
  * Improve argument checking.
  * Add frame narrowing.

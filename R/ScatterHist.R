@@ -9,6 +9,8 @@ NULL
 #' Plot a scatter plot with marginals.
 #'
 #' Plot a scatter plot with optional smoothing curves or contour lines, and marginal histogram/density plots.
+#' Based on \url{http://www.win-vector.com/blog/2015/06/wanted-a-perfect-scatterplot-with-marginals/}.
+#' See also \code{ggExtra::ggMarginal}.
 #'
 #' If \code{smoothmethod} is:
 #' \itemize{
@@ -47,6 +49,10 @@ NULL
 #' @param adjust_y  numeric adjust y density plot
 #' @param point_alpha numeric opaqueness of the plot points
 #' @param contour logical if TRUE add a 2d contour plot
+#' @return plot grid
+#'
+#' @seealso \code{\link{ScatterHistC}}
+#'
 #' @examples
 #'
 #' set.seed(34903490)
@@ -59,6 +65,7 @@ NULL
 #'   contour = TRUE)
 #'
 #' @export
+#'
 ScatterHist = function(frame, xvar, yvar, title, ...,
                        smoothmethod="lm", # only works for 'auto', 'loess', 'gam', 'lm', 'none' and 'identity'
                        estimate_sig=FALSE,
@@ -87,14 +94,14 @@ ScatterHist = function(frame, xvar, yvar, title, ...,
 
   if(estimate_sig && (smoothmethod %in% c("identity", "lm"))) {
     if(smoothmethod=='identity') {
-      sig <- sigr::wrapFTest(frame, xvar, yvar, format = "ascii")
-      title <- paste0(title, "\nidentity relation: ", format(sig))
+      sig <- sigr::wrapFTest(frame, xvar, yvar)
+      title <- paste0(title, "\nidentity relation: ", render(sig, format = "ascii"))
     }
     if(smoothmethod=='lm') {
       f <- paste(xvar, "~", yvar)
       lmm <- lm(as.formula(f), data = frame)
-      sig <- sigr::wrapFTest(lmm, format = "ascii")
-      title <- paste0(title, "\nlinear relation: ", format(sig))
+      sig <- sigr::wrapFTest(lmm)
+      title <- paste0(title, "\nlinear relation: ", render(sig, format = "ascii"))
     }
   }
 
