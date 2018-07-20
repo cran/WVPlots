@@ -1,8 +1,8 @@
 Package: WVPlots
 Type: Package
 Title: Common Plots for Analysis
-Version: 1.0.1
-Date: 2018-07-11
+Version: 1.0.2
+Date: 2018-07-20
 Authors@R: c(
     person("John", "Mount", email = "jmount@win-vector.com", role = c("aut", "cre")),
     person("Nina", "Zumel", email = "nzumel@win-vector.com", role = c("aut")),
@@ -25,9 +25,9 @@ Suggests: knitr, testthat, plotly, hexbin
 RoxygenNote: 6.0.1
 ByteCompile: true
 NeedsCompilation: no
-Packaged: 2018-07-11 16:44:03 UTC; johnmount
+Packaged: 2018-07-20 16:13:35 UTC; johnmount
 Author: John Mount [aut, cre],
   Nina Zumel [aut],
   Win-Vector LLC [cph]
 Repository: CRAN
-Date/Publication: 2018-07-11 17:10:15 UTC
+Date/Publication: 2018-07-20 16:30:02 UTC

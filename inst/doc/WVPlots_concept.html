@@ -12,7 +12,7 @@
 
 <meta name="author" content="Win-Vector LLC" />
 
-<meta name="date" content="2018-07-11" />
+<meta name="date" content="2018-07-20" />
 
 <title>WVPlots concept</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">WVPlots concept</h1>
 <h4 class="author"><em>Win-Vector LLC</em></h4>
-<h4 class="date"><em>2018-07-11</em></h4>
+<h4 class="date"><em>2018-07-20</em></h4>
 
 
 
@@ -96,7 +96,7 @@ WVPlots<span class="op">::</span><span class="kw">PlotDistCountNormal</span>(d,<
 <li>yvar: name of the y variable column in the data frame (not part of the shown density plots!).</li>
 <li>title: text title for the plot.</li>
 </ul>
-<p>This rigid calling interface is easy to remember and makes switching between plot types very easy. We have also make <code>title</code> a required argument, as we feel all plots should be labeled.</p>
+<p>This intentionally rigid calling interface is easy to remember and makes switching between plot types very easy. We have also make <code>title</code> a required argument, as we feel all plots should be labeled.</p>
 <p>What we are trying to do is separate the specification of exactly what plot we want from the details of how to produce it. We find this separation of concerns and encapsulation of implementation allows us to routinely use rich annotated graphics. Below are a few more examples:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">34903490</span>)
 x =<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">50</span>)
