@@ -5,7 +5,7 @@
 \title{Plot the distribution of a variable with a tail shaded}
 \usage{
 ShadedDensity(frame, xvar, threshold, title, ..., tail = "left",
-  linecolor = "darkgray", shading = "darkblue")
+  linecolor = "darkgray", shading = "darkblue", annotate_area = TRUE)
 }
 \arguments{
 \item{frame}{data frame to get values from}
@@ -23,6 +23,8 @@ ShadedDensity(frame, xvar, threshold, title, ..., tail = "left",
 \item{linecolor}{color of density curve}
 
 \item{shading}{color of shaded region and boundaries}
+
+\item{annotate_area}{if TRUE (default), report the area of the shaded region}
 }
 \description{
 Plot the distribution of a variable with a tail shaded. Annotate with the area of the shaded region.

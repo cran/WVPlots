@@ -1,4 +1,10 @@
 
+# WVPlots 1.0.3 2018-09-17
+
+ * Start removing frame narrowing effect where not needed.
+ * ShadedDensity more controls on annotation and text.
+ * Documentation improvements.
+ 
 # WVPlots 1.0.2 2018-07-20
 
  * Documentation fixes.
