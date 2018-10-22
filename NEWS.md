@@ -1,4 +1,12 @@
 
+# WVPlots 1.0.5 2018-10-22
+
+ * Add PairPlot
+
+# WVPlots 1.0.4 2018-09-17
+
+ * Documentation improvements.
+
 # WVPlots 1.0.3 2018-09-17
 
  * Start removing frame narrowing effect where not needed.
