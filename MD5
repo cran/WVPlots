@@ -1,6 +1,6 @@
-1902c56e36033dcdbcb43411ff5eb7c8 *DESCRIPTION
-246e84dc71bb962d5f5bdada84eb55a5 *NAMESPACE
-2cff96984381b821d20cf7c73ebdfff7 *NEWS.md
+09625b960bcd69e016b204c531e5aa31 *DESCRIPTION
+81abd22f9d5538e599c91cc6877ceae5 *NAMESPACE
+a26fef777cd41efd77c8a252490cdfbf *NEWS.md
 5c6c765b35b3f83bdb8a21d8d1cca4bf *R/BinaryYScatterPlot.R
 3850663f2ce7a09c20d79ecd5e3037f6 *R/ClevelandDotPlot.R
 154230651f29c18b8753c0a6e864ab86 *R/ConditionalSmoothedScatterPlot.R
@@ -14,6 +14,7 @@ b38a00a48698c6359d272515c56cb5bd *R/FitHistoryPlot.R
 6af6590374358905c083f9d4e8a7e8a3 *R/LiftCurve.R
 9365ecf40bb714c56c13dbb71b95d48a *R/LogLogPlot.R
 89c5226fe58bdb315d2be6fe808ff54f *R/PRPlot.R
+5bb49735b019f863b8bd10b4feed5f4e *R/PRTPlot.R
 eeb3d49728101dc69dccb9c942c1a9d4 *R/PairPlot.R
 40996360b5fda0daf1bffbf92817d059 *R/ROC.R
 3ceeed5bf6ef308f1ac1d73bf400cf6a *R/ScatterBoxPlot.R
@@ -30,10 +31,10 @@ ba225e7a677f3d37af4705763bc449ff *R/WVPlots.R
 450fa9002458805fb93dd3c9756bd917 *build/vignette.rds
 1367e818769236eb9f6e74dde7bec0f4 *inst/doc/WVPlots_concept.R
 5f9d4ff4148c1cb4d6873d453b7fd731 *inst/doc/WVPlots_concept.Rmd
-4a692eba6a49f62980c5187fb32b9ff3 *inst/doc/WVPlots_concept.html
+44f002b7ba83263edd61d01b91a82a63 *inst/doc/WVPlots_concept.html
 3f444624efa4afb6fb2ef399e7dacca4 *inst/doc/WVPlots_examples.R
 2e25572dc7698d7c92ccf59d08063852 *inst/doc/WVPlots_examples.Rmd
-17fa435728900781ccd0fa76e4f59acf *inst/doc/WVPlots_examples.html
+ef8132f3b062bc2a02e84999562c1cfb *inst/doc/WVPlots_examples.html
 1c939b55841f5b9e361fec8016fae9d1 *man/BinaryYScatterPlot.Rd
 16de522087a6cf8d40dbf933ea19e6bf *man/ClevelandDotPlot.Rd
 228432f81ad1f5c62710b15e7aa664c0 *man/ConditionalSmoothedScatterPlot.Rd
@@ -47,6 +48,7 @@ fa02641ecd2260418b4b8c5c826ebdb2 *man/DoubleHistogramPlot.Rd
 82b7e6e49c0c76743a64364581c3c174 *man/LiftCurvePlot.Rd
 25075e81ea21bb3d89661a02a760b9a0 *man/LogLogPlot.Rd
 d95823a41e32eb86bced7ed18cc2f931 *man/PRPlot.Rd
+540016fec4fa031ee47019c5b04a588a *man/PRTPlot.Rd
 ea6c2376aab6fcabae3304c7099c1597 *man/PairPlot.Rd
 d00ae3e0754295d2d94b92992e11d482 *man/PlotDistCountNormal.Rd
 8aad49d5cc32079e53cbb82aca9e2dfc *man/PlotDistDensityBeta.Rd
