@@ -25,6 +25,7 @@
 #' @param ...  no unnamed argument, added to force named binding of later arguments.
 #' @param large_count numeric, upper bound target for number of plotting points
 #' @param include_wizard logical, if TRUE plot the ideal or wizard plot.
+#' @param truth_target if not NULL compare to this scalar value.
 #' @examples
 #'
 #' set.seed(34903490)
@@ -38,14 +39,19 @@
 LiftCurvePlot = function(frame, xvar, truthVar, title,
                          ...,
                          large_count = 1000,
-                         include_wizard = TRUE) {
+                         include_wizard = TRUE,
+                         truth_target = NULL) {
   frame <- check_frame_args_list(...,
                                  frame = frame,
                                  name_var_list = list(xvar = xvar, truthVar = truthVar),
                                  title = title,
                                  funname = "WVPlots::LiftCurvePlot")
   pct_outcome <- pctpop <- sort_criterion <- NULL # mark as not unbound variables
-  truthcol <- as.numeric(frame[[truthVar]])
+  if(!is.null(truth_target)) {
+    truthcol <- as.numeric(frame[[truthVar]]==truth_target)
+  } else {
+    truthcol <- as.numeric(frame[[truthVar]])
+  }
   predcol <- as.numeric(frame[[xvar]])
   # data frame of pred and truth, sorted in order of the predictions
   d = data.frame(predcol = predcol, truthcol = truthcol)
@@ -127,6 +133,7 @@ LiftCurvePlot = function(frame, xvar, truthVar, title,
         xvar)) +
     ggplot2::xlab("fraction items in sort order") +
     ggplot2::ylab("lift") +
+    ggplot2::geom_hline(yintercept=1) +
     ggplot2::scale_x_continuous(breaks = seq(0, 1, 0.1)) +
     ggplot2::scale_color_manual(values = colorKey) +
     ggplot2::theme(legend.position = "bottom")
