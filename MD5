@@ -1,6 +1,6 @@
-6fd176a66710a12345ac06099703d086 *DESCRIPTION
-81abd22f9d5538e599c91cc6877ceae5 *NAMESPACE
-cc6491c96d321a0dd6a06ad7ecd3afa5 *NEWS.md
+01a4597c6c822bf43e23100a943b2381 *DESCRIPTION
+a36ff4761be2dc504247f69dd08edace *NAMESPACE
+2842de35ac6f13a2993ee272fa386e65 *NEWS.md
 5c6c765b35b3f83bdb8a21d8d1cca4bf *R/BinaryYScatterPlot.R
 3850663f2ce7a09c20d79ecd5e3037f6 *R/ClevelandDotPlot.R
 154230651f29c18b8753c0a6e864ab86 *R/ConditionalSmoothedScatterPlot.R
@@ -24,6 +24,7 @@ e3ec4033ab3883d825a96f1d9f0ab4c4 *R/ScatterHist.R
 5c660063406157d56820c8d33b1050c6 *R/ShadowHist.R
 f93879e195c5ef1584ef0c69927294cc *R/ShadowPlot.R
 ba225e7a677f3d37af4705763bc449ff *R/WVPlots.R
+8208ac3980170e1156f93edb387623b7 *R/run_WVPlots_tests.R
 923999e13524180e846a2841244d8a01 *R/sharedFunctions.R
 8c5d946ebb8ab9f885488efd32d94c4e *R/wrapr_exports.R
 3ad13f9119555924f18c0309ded5cafa *R/wv_gapply.R
@@ -31,10 +32,11 @@ ba225e7a677f3d37af4705763bc449ff *R/WVPlots.R
 450fa9002458805fb93dd3c9756bd917 *build/vignette.rds
 1367e818769236eb9f6e74dde7bec0f4 *inst/doc/WVPlots_concept.R
 fcc072684fae7aa13767d112bd1e1c94 *inst/doc/WVPlots_concept.Rmd
-ecd6d92c52f798318cf9bcaefeb98d97 *inst/doc/WVPlots_concept.html
+a3abf5a438573c66bf70dda2dd622e58 *inst/doc/WVPlots_concept.html
 3f444624efa4afb6fb2ef399e7dacca4 *inst/doc/WVPlots_examples.R
 2e25572dc7698d7c92ccf59d08063852 *inst/doc/WVPlots_examples.Rmd
-48d11e758fb83ea4104bbd35af4a5c50 *inst/doc/WVPlots_examples.html
+d07c4725e5cdbab3cfd839e419b60c7a *inst/doc/WVPlots_examples.html
+ce52083ffbb9e8fcb38a01e7fad69f98 *inst/unit_tests/test_All.R
 1c939b55841f5b9e361fec8016fae9d1 *man/BinaryYScatterPlot.Rd
 16de522087a6cf8d40dbf933ea19e6bf *man/ClevelandDotPlot.Rd
 228432f81ad1f5c62710b15e7aa664c0 *man/ConditionalSmoothedScatterPlot.Rd
@@ -71,8 +73,8 @@ c7ba1767ed2e7f7e162838c290d74395 *man/ShadowHist.Rd
 575da2c8db9207d5f9e75157a4248f5f *man/plot_fit_trajectory.Rd
 21065cfc795f93e0dcfd058a5ac23d5b *man/plotlyROC.Rd
 b0b8c5f556e620854d15010675e521a7 *man/reexports.Rd
-b9ff884270c2286e67074ea02c9eaace *tests/testthat.R
-45dac894e602933e71b978eea968c8a4 *tests/testthat/testAll.R
+80dc535e04cd65934169e8b6f863c6be *man/run_WVPlots_tests.Rd
+8a0c72be8d07310c35ec9c2e7ed85d53 *tests/package_test_runner.R
 42b518ff33b91a0c47e97d89cdd3af6f *tools/WVPlots.png
 fcc072684fae7aa13767d112bd1e1c94 *vignettes/WVPlots_concept.Rmd
 2e25572dc7698d7c92ccf59d08063852 *vignettes/WVPlots_examples.Rmd
