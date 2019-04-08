@@ -1,4 +1,8 @@
 
+# WVPlots 1.1.0 2019-04-07
+
+ * Fix no-wizard option in lift plot.
+
 # WVPlots 1.0.9 2019-02-20
 
  * Switch to RUnit.
