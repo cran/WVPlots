@@ -1,6 +1,6 @@
-50c20877535163bf3e7ef6f4a4317e96 *DESCRIPTION
+95a0311bdbbc1801db1d08780fc0a7a6 *DESCRIPTION
 a36ff4761be2dc504247f69dd08edace *NAMESPACE
-7d4671d41ecaf3be4536d44c3ae27092 *NEWS.md
+c2d09b4dbae8bd27197fb6fbbb40a2dd *NEWS.md
 5c6c765b35b3f83bdb8a21d8d1cca4bf *R/BinaryYScatterPlot.R
 3850663f2ce7a09c20d79ecd5e3037f6 *R/ClevelandDotPlot.R
 154230651f29c18b8753c0a6e864ab86 *R/ConditionalSmoothedScatterPlot.R
@@ -28,14 +28,14 @@ ba225e7a677f3d37af4705763bc449ff *R/WVPlots.R
 923999e13524180e846a2841244d8a01 *R/sharedFunctions.R
 8c5d946ebb8ab9f885488efd32d94c4e *R/wrapr_exports.R
 3ad13f9119555924f18c0309ded5cafa *R/wv_gapply.R
-2525bf3775673aa78afa4912c90bbd2f *README.md
-450fa9002458805fb93dd3c9756bd917 *build/vignette.rds
+b33f57beb718a4f16c0fcb409ec207d8 *README.md
+a6322055a6be2231bff2b5a648008737 *build/vignette.rds
 1367e818769236eb9f6e74dde7bec0f4 *inst/doc/WVPlots_concept.R
 fcc072684fae7aa13767d112bd1e1c94 *inst/doc/WVPlots_concept.Rmd
-084850c2f347042fae677c93f94728d4 *inst/doc/WVPlots_concept.html
+9ff2fb0aa500991738d73368afd8b9a8 *inst/doc/WVPlots_concept.html
 3f444624efa4afb6fb2ef399e7dacca4 *inst/doc/WVPlots_examples.R
 2e25572dc7698d7c92ccf59d08063852 *inst/doc/WVPlots_examples.Rmd
-9abcd5ebb3cc7d44906cd56e59403405 *inst/doc/WVPlots_examples.html
+84c5bb46707e974dabee257571f88766 *inst/doc/WVPlots_examples.html
 ce52083ffbb9e8fcb38a01e7fad69f98 *inst/unit_tests/test_All.R
 1c939b55841f5b9e361fec8016fae9d1 *man/BinaryYScatterPlot.Rd
 16de522087a6cf8d40dbf933ea19e6bf *man/ClevelandDotPlot.Rd
