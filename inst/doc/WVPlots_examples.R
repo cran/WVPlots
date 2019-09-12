@@ -172,10 +172,14 @@ WVPlots::ShadowHist(dframe, "x", "gp", title = "X values by region")
 
 
 ## ------------------------------------------------------------------------
-ngp = length(unique(dframe$gp))
+WVPlots::ShadowHist(dframe, "x", "gp", title = "X values by region", monochrome=TRUE) 
 
-WVPlots::ShadowHist(dframe, "x", "gp", title = "X values by region", palette = NULL) + 
-  ggplot2::scale_fill_manual(values = rep("darkblue", ngp))
+## ------------------------------------------------------------------------
+colormap = c("#1F968BFF", "#29AF7FFF", "#55C667FF")
+
+WVPlots::ShadowHist(dframe, "x", "gp", title = "X values by region", palette=NULL) +
+  ggplot2::scale_fill_manual(values=colormap)
+
 
 ## ------------------------------------------------------------------------
 classes = c("a", "b", "c")
