@@ -2,9 +2,9 @@
 % Please edit documentation in R/DistributionPlot.R
 \name{PlotDistHistBeta}
 \alias{PlotDistHistBeta}
-\title{Plot distribution details as a histogram plus matching beta}
+\title{Plot empirical rate data as a histogram plus matching beta}
 \usage{
-PlotDistHistBeta(frm, xvar, title, ..., binwidth = NULL, bins = 30,
+PlotDistHistBeta(frm, xvar, title, ..., bins = 30,
   hist_color = "darkgray", beta_color = "blue", mean_color = "blue",
   sd_color = "darkgray")
 }
@@ -16,8 +16,6 @@ PlotDistHistBeta(frm, xvar, title, ..., binwidth = NULL, bins = 30,
 \item{title}{title to place on plot}
 
 \item{...}{force later arguments to bind by name}
-
-\item{binwidth}{passed to geom_histogram(). If passed in, overrides bins.}
 
 \item{bins}{passed to geom_histogram(). Default: 30}
 
@@ -33,7 +31,7 @@ PlotDistHistBeta(frm, xvar, title, ..., binwidth = NULL, bins = 30,
 ggplot2 plot
 }
 \description{
-Compares empirical data to a beta distribution with the same mean and standard deviation.
+Compares empirical rate data to a beta distribution with the same mean and standard deviation.
 }
 \details{
 Plots the histogram of the empirical distribution and the density of the matching beta distribution.
@@ -45,9 +43,23 @@ The binwidth can also be passed in instead of the number of bins.
 \examples{
 
 set.seed(52523)
-d <- data.frame(wt=rbeta(100,shape1=0.5,shape2=0.5))
-PlotDistHistBeta(d,'wt','example')
+N = 100
+pgray = 0.1  # rate of gray horses in the population
+herd_size = round(runif(N, min=25, 50))
+ngray = rbinom(N, herd_size, pgray)
+hdata = data.frame(n_gray=ngray, herd_size=herd_size)
+
+# observed rate of gray horses in each herd
+hdata$rate_gray = with(hdata, ngray/herd_size)
+
+title = "Observed prevalence of gray horses in population"
+
+PlotDistHistBeta(hdata, "rate_gray", title) +
+  ggplot2::geom_vline(xintercept = pgray, linetype=4, color="maroon") +
+  ggplot2::annotate("text", x=pgray+0.01, y=0.01, hjust="left",
+                    label = paste("True prevalence =", pgray))
 
 # no sd lines
-PlotDistHistBeta(d,'wt','example', sd_color=NULL)
+PlotDistHistBeta(hdata, "rate_gray", title,
+                    sd_color=NULL)
 }
