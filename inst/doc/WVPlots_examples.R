@@ -103,7 +103,12 @@ frmP = data.frame(x1=x1,x2=x2,yC=y>=as.numeric(quantile(y,probs=0.8)))
 WVPlots::ROCPlotPair(frmP, "x1", "x2", "yC", TRUE, title="Example ROC pair plot")
 
 ## ------------------------------------------------------------------------
-WVPlots::PRPlot(frm, "model", "isValuable", TRUE, title="Example Precision-Recall plot")
+WVPlots::PRTPlot(frm, "model", "isValuable", TRUE, title="Example Precision-Recall plot")
+
+## ------------------------------------------------------------------------
+WVPlots::PRTPlot(frm, "model", "isValuable", TRUE, 
+                 plotvars = c("sensitivity", "false_positive_rate"),
+                 title="TPR(sensitivity)/FPR as functions of threshold")
 
 ## ------------------------------------------------------------------------
 WVPlots::DoubleDensityPlot(frm, "model", "isValuable", title="Example double density plot")
@@ -202,6 +207,39 @@ set.seed(52523)
 d <- data.frame(wt=100*rnorm(100))
 WVPlots::PlotDistCountNormal(d,'wt','example')
 WVPlots::PlotDistDensityNormal(d,'wt','example')
+
+## ------------------------------------------------------------------------
+set.seed(13951)
+trial_size = 20  # one trial is 20 flips
+ntrial = 100     # run 100 trials
+true_frate = 0.4  # true heads probability
+fdata = data.frame(n_heads = rbinom(ntrial, trial_size, true_frate))
+
+title = paste("Distribution of head counts, trial size =", trial_size)
+# compare to empirical p
+WVPlots::PlotDistCountBinomial(fdata, "n_heads", trial_size, title)
+
+## ------------------------------------------------------------------------
+# compare to theoretical p of 0.5
+WVPlots::PlotDistCountBinomial(fdata, "n_heads", trial_size, title,
+                      p = 0.5)
+
+## ------------------------------------------------------------------------
+set.seed(349521)
+N = 100  # number of cohorts
+psucc = 0.15  # true success rate in population
+group_size = round(runif(N, min=25, 50))  # sizes of observed sample groups
+nsucc = rbinom(N, group_size, psucc)   # successes in each group
+hdata = data.frame(n_success=nsucc, group_size=group_size)
+
+# observed rate of successes in each group
+hdata$rate_success = with(hdata, n_success/group_size)
+
+title = "Observed prevalence of success in population"
+
+WVPlots::PlotDistHistBeta(hdata, "rate_success", title) 
+WVPlots::PlotDistDensityBeta(hdata, "rate_success", title)
+
 
 ## ------------------------------------------------------------------------
 y = c(1,2,3,4,5,10,15,18,20,25)
