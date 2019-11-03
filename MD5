@@ -1,6 +1,6 @@
-14caf19dd63eae29e2368dbb18359b3d *DESCRIPTION
+cd0a2bec62c405c5fac79879b0d38903 *DESCRIPTION
 79e6c6059df6a26d2d5fdc7790c6c1f4 *NAMESPACE
-7b14f08ed19e42d5dff2700e170b6e80 *NEWS.md
+368234c4db153d6ddf6c1aee72d5dac5 *NEWS.md
 4ded55f712c88a6bbd5e6b9ae304160d *R/BinaryYScatterPlot.R
 c437537ccc5086973dd311176f9447e3 *R/ClevelandDotPlot.R
 c5cd0d8cfd9db69e52e86d99958ca1da *R/ConditionalSmoothedScatterPlot.R
@@ -12,7 +12,7 @@ ca8bda93802ee40d8132a1ddc38cfc96 *R/FitHistoryPlot.R
 e059f84583af394a7c8aec06bbdc12d1 *R/GainCurve.R
 edc89868a4fdcc3a185e0952e94e2a5b *R/HexBinPlot.R
 0848123a13a6dc49f4e96e04fece9689 *R/LiftCurve.R
-42a06f364dd8b55fe82de37b4aff4c82 *R/LogLogPlot.R
+cfce5789648fcf234636ffae41c0f470 *R/LogLogPlot.R
 89c5226fe58bdb315d2be6fe808ff54f *R/PRPlot.R
 ebea8bd93b6ce0125bbe74cbd3368d4c *R/PRTPlot.R
 771558cf84f280cf2aa296141cf1dea5 *R/PairPlot.R
@@ -35,10 +35,10 @@ b33f57beb718a4f16c0fcb409ec207d8 *README.md
 a6322055a6be2231bff2b5a648008737 *build/vignette.rds
 1367e818769236eb9f6e74dde7bec0f4 *inst/doc/WVPlots_concept.R
 fcc072684fae7aa13767d112bd1e1c94 *inst/doc/WVPlots_concept.Rmd
-ef8a79f1237de13d7840acc4c8ac0587 *inst/doc/WVPlots_concept.html
+b21999c7bd0c3e83aa2adc3c32f14bc0 *inst/doc/WVPlots_concept.html
 ab1bb0855994c72735a03a7a96b182da *inst/doc/WVPlots_examples.R
 bfb09a1e0387ccbd158de7f17be0a720 *inst/doc/WVPlots_examples.Rmd
-230b09006a253f6b69b45979bbd2095a *inst/doc/WVPlots_examples.html
+0f52ca3af04069ce2662dc2d4c99e381 *inst/doc/WVPlots_examples.html
 ce52083ffbb9e8fcb38a01e7fad69f98 *inst/unit_tests/test_All.R
 fda7b41bd75157271a111a7cd0ee3234 *man/BinaryYScatterPlot.Rd
 2383af1d203424127a291dc37e6b2da7 *man/ClevelandDotPlot.Rd
