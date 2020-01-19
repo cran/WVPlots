@@ -1,8 +1,8 @@
 Package: WVPlots
 Type: Package
 Title: Common Plots for Analysis
-Version: 1.2.2
-Date: 2019-11-03
+Version: 1.2.3
+Date: 2020-01-18
 Authors@R: c(
     person("John", "Mount", email = "jmount@win-vector.com", role = c("aut", "cre")),
     person("Nina", "Zumel", email = "nzumel@win-vector.com", role = c("aut")),
@@ -19,16 +19,16 @@ Description: Select data analysis plots, under a standardized calling interface 
 License: GPL-2 | GPL-3
 VignetteBuilder: knitr
 Depends: R (>= 3.4.0)
-Imports: ggplot2 (>= 2.2.0), wrapr (>= 1.9.2), sigr (>= 1.0.6), cdata
-        (>= 1.1.3), rqdatatable (>= 1.2.3), rquery (>= 1.3.9), utils,
+Imports: ggplot2 (>= 2.2.0), wrapr (>= 1.9.4), sigr (>= 1.0.6), cdata
+        (>= 1.1.4), rqdatatable (>= 1.2.5), rquery (>= 1.4.1), utils,
         grid, gridExtra, graphics, mgcv, stats
 Suggests: knitr, RUnit, plotly, hexbin
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 ByteCompile: true
 NeedsCompilation: no
-Packaged: 2019-11-03 15:16:21 UTC; johnmount
+Packaged: 2020-01-18 18:12:30 UTC; johnmount
 Author: John Mount [aut, cre],
   Nina Zumel [aut],
   Win-Vector LLC [cph]
 Repository: CRAN
-Date/Publication: 2019-11-03 15:40:02 UTC
+Date/Publication: 2020-01-19 08:10:02 UTC

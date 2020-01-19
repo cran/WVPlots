@@ -1,7 +1,7 @@
-## ----echo=FALSE----------------------------------------------------------
+## ----echo=FALSE---------------------------------------------------------------
 knitr::opts_chunk$set(fig.width=6, fig.height=6)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 set.seed(34903490)
 x = rnorm(50)
 y = 0.5*x^2 + 2*x + rnorm(length(x))
@@ -9,37 +9,37 @@ frm = data.frame(x=x,y=y,yC=y>=as.numeric(quantile(y,probs=0.8)))
 frm$absY <- abs(frm$y)
 frm$posY = frm$y > 0
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 WVPlots::ScatterHist(frm, "x", "y", title="Example Fit")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 WVPlots::ScatterHist(frm, "x", "y", smoothmethod="lm", 
                      title="Example Linear Fit", estimate_sig = TRUE)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 WVPlots::ScatterHist(frm, "x", "y", smoothmethod="identity", 
                      title="Example Relation Plot", estimate_sig = TRUE)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 set.seed(34903490)
 fmScatterHistC = data.frame(x=rnorm(50),y=rnorm(50))
 fmScatterHistC$cat <- fmScatterHistC$x+fmScatterHistC$y>0
 WVPlots::ScatterHistC(fmScatterHistC, "x", "y", "cat", title="Example Conditional Distribution")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 set.seed(34903490)
 frmScatterHistN = data.frame(x=rnorm(50),y=rnorm(50))
 frmScatterHistN$z <- frmScatterHistN$x+frmScatterHistN$y
 WVPlots::ScatterHistN(frmScatterHistN, "x", "y", "z", title="Example Joint Distribution")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 WVPlots::BinaryYScatterPlot(frm, "x", "posY", use_glm=FALSE,
                             title="Example 'Probability of Y' Plot (ggplot2 smoothing)")
 
 WVPlots::BinaryYScatterPlot(frm, "x", "posY", use_glm=TRUE, 
                             title="Example 'Probability of Y' Plot (GLM smoothing)")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 if(requireNamespace("hexbin", quietly = TRUE)) {
   set.seed(5353636)
   
@@ -50,7 +50,7 @@ if(requireNamespace("hexbin", quietly = TRUE)) {
 }
 
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 set.seed(34903490)
 y = abs(rnorm(20)) + 0.1
 x = abs(y + 0.5*rnorm(20))
@@ -64,10 +64,10 @@ frm$rate = with(frm, value/costs)
 frm$isValuable = (frm$value >= as.numeric(quantile(frm$value, probs=0.8)))
 
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 WVPlots::GainCurvePlot(frm, "model", "value", title="Example Continuous Gain Curve")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 
 gainx = 0.10  # get the top 10% most valuable points as sorted by the model
 
@@ -86,13 +86,13 @@ WVPlots::GainCurvePlotWithNotation(frm, "model", "value",
 
 
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 WVPlots::GainCurvePlotC(frm, "model", "costs", "value", title="Example Continuous Gain CurveC")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 WVPlots::ROCPlot(frm, "model", "isValuable", TRUE, title="Example ROC plot")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 set.seed(34903490)
 x1 = rnorm(50)
 x2 = rnorm(length(x1))
@@ -102,21 +102,21 @@ frmP = data.frame(x1=x1,x2=x2,yC=y>=as.numeric(quantile(y,probs=0.8)))
 # WVPlots::ROCPlot(frmP, "x2", "yC", TRUE, title="Example ROC plot")
 WVPlots::ROCPlotPair(frmP, "x1", "x2", "yC", TRUE, title="Example ROC pair plot")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 WVPlots::PRTPlot(frm, "model", "isValuable", TRUE, title="Example Precision-Recall plot")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 WVPlots::PRTPlot(frm, "model", "isValuable", TRUE, 
                  plotvars = c("sensitivity", "false_positive_rate"),
                  title="TPR(sensitivity)/FPR as functions of threshold")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 WVPlots::DoubleDensityPlot(frm, "model", "isValuable", title="Example double density plot")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 WVPlots::DoubleHistogramPlot(frm, "model", "isValuable", title="Example double histogram plot")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 set.seed(34903490)
 
 # discrete variable: letters of the alphabet
@@ -138,7 +138,7 @@ WVPlots::ClevelandDotPlot(randomDraws, "letter", sort=0, title="Example Clevelan
 WVPlots::ClevelandDotPlot(randomDraws, "letter", sort=1, stem=FALSE, title="Example with increasing sort order + coord_flip, no stem") + ggplot2::coord_flip()
 
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 set.seed(34903490)
 N = 1000
 ncar_vec = 0:5
@@ -149,7 +149,7 @@ WVPlots::ClevelandDotPlot(df, "num_cars", sort = 0, title = "Distribution of hou
               
 
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 set.seed(354534)
 N = 100
 
@@ -165,7 +165,7 @@ dframe = data.frame(eye_color = eye_color, sex = sex)
 WVPlots::ShadowPlot(dframe, "eye_color", "sex", title = "Shadow plot of eye colors by sex")
 
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 set.seed(354534)
 N = 100
 
@@ -176,17 +176,17 @@ dframe$gp = with(dframe, ifelse(x < -0.5, "region 1",
 WVPlots::ShadowHist(dframe, "x", "gp", title = "X values by region")
 
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 WVPlots::ShadowHist(dframe, "x", "gp", title = "X values by region", monochrome=TRUE) 
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 colormap = c("#1F968BFF", "#29AF7FFF", "#55C667FF")
 
 WVPlots::ShadowHist(dframe, "x", "gp", title = "X values by region", palette=NULL) +
   ggplot2::scale_fill_manual(values=colormap)
 
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 classes = c("a", "b", "c")
 means = c(2, 4, 3)
 names(means) = classes
@@ -198,17 +198,17 @@ frm2 = data.frame(label=label,
 WVPlots::ScatterBoxPlot(frm2, "label", "meas", pt_alpha=0.2, title="Example Scatter/Box plot")
 WVPlots::ScatterBoxPlotH(frm2, "meas", "label",  pt_alpha=0.2, title="Example Scatter/Box plot")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 frmx = data.frame(x = rbinom(1000, 20, 0.5))
 WVPlots::DiscreteDistribution(frmx, "x","Discrete example")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 set.seed(52523)
 d <- data.frame(wt=100*rnorm(100))
 WVPlots::PlotDistCountNormal(d,'wt','example')
 WVPlots::PlotDistDensityNormal(d,'wt','example')
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 set.seed(13951)
 trial_size = 20  # one trial is 20 flips
 ntrial = 100     # run 100 trials
@@ -219,12 +219,12 @@ title = paste("Distribution of head counts, trial size =", trial_size)
 # compare to empirical p
 WVPlots::PlotDistCountBinomial(fdata, "n_heads", trial_size, title)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # compare to theoretical p of 0.5
 WVPlots::PlotDistCountBinomial(fdata, "n_heads", trial_size, title,
                       p = 0.5)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 set.seed(349521)
 N = 100  # number of cohorts
 psucc = 0.15  # true success rate in population
@@ -241,7 +241,7 @@ WVPlots::PlotDistHistBeta(hdata, "rate_success", title)
 WVPlots::PlotDistDensityBeta(hdata, "rate_success", title)
 
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 y = c(1,2,3,4,5,10,15,18,20,25)
 x = seq_len(length(y))
 df = data.frame(x=x,y=y)
@@ -259,7 +259,7 @@ WVPlots::ConditionalSmoothedScatterPlot(df, "x", "y", "gp", title="centered smoo
 WVPlots::ConditionalSmoothedScatterPlot(df, "x", "y", "gp", title="left smooth, multigroup", align="left")
 WVPlots::ConditionalSmoothedScatterPlot(df, "x", "y", "gp", title="right smooth, multigroup", align="right")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 set.seed(52523)
 d = data.frame(meas=rnorm(100))
 threshold = -1.5
@@ -269,7 +269,7 @@ WVPlots::ShadedDensity(d, "meas", -threshold, tail="right",
                        title="Example shaded density plot, right tail")
 
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 set.seed(52523)
 d = data.frame(meas=rnorm(100))
 # first and third quartiles of the data (central 50%)
