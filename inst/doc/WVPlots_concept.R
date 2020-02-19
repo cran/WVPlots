@@ -3,7 +3,9 @@ knitr::opts_chunk$set(fig.width=6, fig.height=6)
 
 ## -----------------------------------------------------------------------------
 set.seed(52523)
-d <- data.frame(wt=100*rnorm(100))
+d <- data.frame(
+  wt = 100*rnorm(100),
+  stringsAsFactors = FALSE)
 WVPlots::PlotDistCountNormal(d,'wt','example')
 
 ## -----------------------------------------------------------------------------
@@ -13,7 +15,11 @@ WVPlots::PlotDistDensityNormal(d,'wt','example')
 set.seed(34903490)
 x = rnorm(50)
 y = 0.5*x^2 + 2*x + rnorm(length(x))
-frm = data.frame(x=x,y=y,yC=y>=as.numeric(quantile(y,probs=0.8)))
+frm = data.frame(
+  x=x,
+  y=y,
+  yC=y>=as.numeric(quantile(y,probs=0.8)),
+  stringsAsFactors = FALSE)
 frm$absY <- abs(frm$y)
 frm$posY = frm$y > 0
 WVPlots::ScatterHist(frm, "x", "y", smoothmethod="lm", 
@@ -24,7 +30,10 @@ set.seed(34903490)
 y = abs(rnorm(20)) + 0.1
 x = abs(y + 0.5*rnorm(20))
 
-frm = data.frame(model=x, value=y)
+frm = data.frame(
+  model=x, 
+  value=y,
+  stringsAsFactors = FALSE)
 
 frm$costs=1
 frm$costs[1]=5
@@ -48,7 +57,9 @@ WVPlots::GainCurvePlotWithNotation(frm, "model", "value",
 
 ## -----------------------------------------------------------------------------
 set.seed(52523)
-d = data.frame(meas=rnorm(100))
+d = data.frame(
+  meas=rnorm(100),
+  stringsAsFactors = FALSE)
 threshold = 1.5
 WVPlots::ShadedDensity(d, "meas", threshold, tail="right", 
                        title="Example shaded density plot, right tail")
@@ -56,7 +67,10 @@ WVPlots::ShadedDensity(d, "meas", threshold, tail="right",
 
 ## -----------------------------------------------------------------------------
 set.seed(34903490)
-frm = data.frame(x=rnorm(50),y=rnorm(50))
+frm = data.frame(
+  x=rnorm(50),
+  y=rnorm(50),
+  stringsAsFactors = FALSE)
 frm$z <- frm$x+frm$y
 WVPlots::ScatterHistN(frm, "x", "y", "z", title="Example Joint Distribution")
 
@@ -64,6 +78,9 @@ WVPlots::ScatterHistN(frm, "x", "y", "z", title="Example Joint Distribution")
 set.seed(34903490)
 x = rnorm(50)
 y = 0.5*x^2 + 2*x + rnorm(length(x))
-frm = data.frame(x=x,yC=y>=as.numeric(quantile(y,probs=0.8)))
+frm = data.frame(
+  x = x,
+  yC = y>=as.numeric(quantile(y,probs=0.8)),
+  stringsAsFactors = FALSE)
 WVPlots::ROCPlot(frm, "x", "yC", TRUE, title="Example ROC plot")
 
