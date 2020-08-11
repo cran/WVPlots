@@ -21,7 +21,7 @@ novelPointPositionsR <- function(x) {
 #' Graph AUC.
 #'
 #' Based on:
-#'  http://blog.revolutionanalytics.com/2016/08/roc-curves-in-two-lines-of-code.html
+#'  https://blog.revolutionanalytics.com/2016/08/roc-curves-in-two-lines-of-code.html
 #'
 #'  See also https://github.com/WinVector/sigr
 #
@@ -92,7 +92,7 @@ graphROC <- function(modelPredictions, yValues) {
 #'
 #' Plot receiver operating characteristic plot.
 #'
-#' See http://www.nature.com/nmeth/journal/v13/n8/full/nmeth.3945.html for a discussion of
+#' See https://www.nature.com/articles/nmeth.3945 for a discussion of
 #' true positive and false positive rates,
 #' and how the ROC plot relates to the precision/recall plot.
 #'
@@ -110,7 +110,7 @@ graphROC <- function(modelPredictions, yValues) {
 #' @param fill_color shading color for the area under the curve
 #' @param diag_color color for the AUC=0.5 line (x=y)
 #'
-#' @seealso \code{\link{PRTPlot}}
+#' @seealso \code{\link{PRTPlot}}, \code{\link{ThresholdPlot}}
 #'
 #' @examples
 #'
@@ -185,7 +185,9 @@ ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
     ggplot2::ggtitle(paste0(title,'\n',
                             truthVar, '==', truthTarget, ' ~ ', xvar),
                      subtitle = subtitle) +
-    ggplot2::ylim(0,1) + ggplot2::xlim(0,1)
+    ggplot2::ylim(0,1) + ggplot2::xlim(0,1) +
+    ggplot2::ylab('TruePositiveRate (Sensitivity)') +
+    ggplot2::xlab('FalsePositiveRate (1 - Specificity)')
   if(returnScores) {
     return(list(plot=plot,rocList=rocList,aucsig=aucsig,pString=pString))
   }
@@ -204,7 +206,7 @@ ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
 #' are columns of the same data frame.
 #'
 #' If \code{palette} is NULL, plot colors will be chosen from the default ggplot2 palette. Setting \code{palette} to NULL
-#' allows the user to choose a non-Brewer palette, for example with \code{\link[ggplot2]{scale_color_manual}}.
+#' allows the user to choose a non-Brewer palette, for example with \code{\link[ggplot2:scale_manual]{scale_color_manual}}.
 #'
 #' @param frame data frame to get values from
 #' @param xvar1 name of the first independent (input or model) column in frame
@@ -308,7 +310,9 @@ ROCPlotPair <- function(frame, xvar1, xvar2, truthVar, truthTarget, title,
   plot <- plot + ggplot2::ggtitle(paste0(title,'\n',
                                          truthVar, '==', truthTarget, ' ~ model'),
                                   subtitle = subtitle) +
-    ggplot2::ylim(0,1) + ggplot2::xlim(0,1)
+    ggplot2::ylim(0,1) + ggplot2::xlim(0,1) +
+    ggplot2::ylab('TruePositiveRate (Sensitivity)') +
+    ggplot2::xlab('FalsePositiveRate (1 - Specificity)')
   if(returnScores) {
     return(list(plot=plot,
                 rocList1=rocList1,rocList2=rocList2,
@@ -326,7 +330,7 @@ ROCPlotPair <- function(frame, xvar1, xvar2, truthVar, truthTarget, title,
 #' data frames, each of which has its own model predictions and true outcome columns.
 #'
 #' If \code{palette} is NULL, plot colors will be chosen from the default ggplot2 palette. Setting \code{palette} to NULL
-#' allows the user to choose a non-Brewer palette, for example with \code{\link[ggplot2]{scale_color_manual}}.
+#' allows the user to choose a non-Brewer palette, for example with \code{\link[ggplot2:scale_manual]{scale_color_manual}}.
 #'
 #' @param nm1 name of first model
 #' @param frame1 data frame to get values from
@@ -445,7 +449,9 @@ ROCPlotPair2 <- function(nm1, frame1, xvar1, truthVar1, truthTarget1,
   }
   plot <- plot + ggplot2::ggtitle(title,
                                   subtitle = subtitle) +
-    ggplot2::ylim(0,1) + ggplot2::xlim(0,1)
+    ggplot2::ylim(0,1) + ggplot2::xlim(0,1) +
+    ggplot2::ylab('TruePositiveRate (Sensitivity)') +
+    ggplot2::xlab('FalsePositiveRate (1 - Specificity)')
   if(returnScores) {
     return(list(plot=plot,
                 rocList1=rocList1,rocList2=rocList2,
@@ -542,8 +548,8 @@ plotlyROC <- function(d, predCol, outcomeCol, outcomeTarget, title,
                   mode='lines+markers',
                   hoverinfo= 'text',
                   text= ~ paste('</br>threshold: ', model,
-                                '</br>False Positive Rate:', FalsePositiveRate,
-                                '</br>True Positive Rate:', TruePositiveRate)) ->.;
+                                '</br>False Positive Rate (1 - Specificity):', FalsePositiveRate,
+                                '</br>True Positive Rate (Sensitivity):', TruePositiveRate)) ->.;
     plotly::layout(., title = paste(title,
                                     '\n</br>',
                                     outcomeCol, '==', outcomeTarget, ' ~ ', predCol,

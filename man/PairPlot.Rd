@@ -41,11 +41,11 @@ Creates a matrix of scatterplots, one for each possible pair of variables.
 \details{
 If \code{palette} is NULL, and \code{group_var} is non-NULL, plot colors will be chosen from the default ggplot2 palette.
 Setting \code{palette} to NULL
-allows the user to choose a non-Brewer palette, for example with \code{\link[ggplot2]{scale_color_manual}}.
+allows the user to choose a non-Brewer palette, for example with \code{\link[ggplot2:scale_manual]{scale_color_manual}}.
 }
 \examples{
 
-PairPlot(iris, colnames(iris)[1:4], "Example plot", group_var = "Species")
+# PairPlot(iris, colnames(iris)[1:4], "Example plot", group_var = "Species")
 
 # custom palette
 colormap = c('#a6611a', '#dfc27d', '#018571')
@@ -53,7 +53,7 @@ PairPlot(iris, colnames(iris)[1:4], "Example plot",
          group_var = "Species", palette=NULL) +
          ggplot2::scale_color_manual(values=colormap)
 
-# no color-coding
-PairPlot(iris, colnames(iris)[1:4], "Example plot")
+# # no color-coding
+# PairPlot(iris, colnames(iris)[1:4], "Example plot")
 
 }

@@ -108,10 +108,23 @@ WVPlots::GainCurvePlotWithNotation(frm, "model", "value",
 WVPlots::GainCurvePlotC(frm, "model", "costs", "value", title="Example Continuous Gain CurveC")
 
 ## -----------------------------------------------------------------------------
+set.seed(34903490)
+
+# data with two different regimes of behavior
+frm <- rbind(
+  data.frame(
+    model = rnorm(1000),
+    isValuable = sample(c(TRUE, FALSE), prob = c(0.02, 0.98), size = 1000, replace = TRUE)),
+  data.frame(
+    model = rnorm(200) + 5,
+    isValuable = sample(c(TRUE, FALSE), size = 200, replace = TRUE))
+)
+
 WVPlots::ROCPlot(frm, "model", "isValuable", TRUE, title="Example ROC plot")
 
 ## -----------------------------------------------------------------------------
 set.seed(34903490)
+
 x1 = rnorm(50)
 x2 = rnorm(length(x1))
 y = 0.2*x2^2 + 0.5*x2 + x1 + rnorm(length(x1))
@@ -128,9 +141,19 @@ WVPlots::ROCPlotPair(frmP, "x1", "x2", "yC", TRUE, title="Example ROC pair plot"
 WVPlots::PRTPlot(frm, "model", "isValuable", TRUE, title="Example Precision-Recall plot")
 
 ## -----------------------------------------------------------------------------
-WVPlots::PRTPlot(frm, "model", "isValuable", TRUE, 
-                 plotvars = c("sensitivity", "false_positive_rate"),
-                 title="TPR(sensitivity)/FPR as functions of threshold")
+# replicate PRTPlot. Looks a little different because ThresholdPlot does different smoothing
+WVPlots::ThresholdPlot(frm, "model", "isValuable", title="Reproduce PRTPlot",
+              truth_target=TRUE, # default
+              metrics = c("precision", "recall"))
+
+# default: sensitivity/specificity
+WVPlots::ThresholdPlot(frm, "model", "isValuable", 
+                       title="Sensitivity and Specificity as a Function of Threshold")
+
+
+## -----------------------------------------------------------------------------
+WVPlots::ThresholdPlot(frm, "model", "isValuable", title="ROC 'unrolled'",
+              metrics = c("true_positive_rate", "false_positive_rate"))
 
 ## -----------------------------------------------------------------------------
 WVPlots::DoubleDensityPlot(frm, "model", "isValuable", title="Example double density plot")

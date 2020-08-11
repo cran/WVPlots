@@ -1,4 +1,11 @@
 
+# WVPlots 1.2.6 2020-08-11
+
+ * Add performance plots from wvpy https://github.com/WinVector/wvpy 
+ * Improve documentation.
+ * Change to https where possible.
+ * Deal with aliased documentation links.
+
 # WVPlots 1.2.5 2020-05-01
 
  * Work around ggplot2 to deprecating fun.y, fun.ymin, fun.ymax.
