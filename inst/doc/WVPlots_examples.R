@@ -138,6 +138,35 @@ frmP = data.frame(
 WVPlots::ROCPlotPair(frmP, "x1", "x2", "yC", TRUE, title="Example ROC pair plot")
 
 ## -----------------------------------------------------------------------------
+set.seed(2342458)
+
+make_data <- function(nrows) {
+    d <- data.frame(x = rnorm(nrows))
+    d['y'] = sin(d['x']) + 0.25*rnorm(n = nrows)
+    d['x2'] = rnorm(n = nrows)
+    d['yc'] = d[['y']]>0.5
+    return(d)
+}
+
+
+training <- make_data(500)
+test <- make_data(200)
+
+model <- glm(yc ~ x + x2, data=training, family=binomial)
+
+training$pred <- predict(model, newdata=training, type="response")
+test$pred <- predict(model, newdata=test, type="response")
+
+WVPlots::ROCPlotPair2(nm1 = "Training", # model 1
+                      frame1 = training,
+                      xvar1 = "pred",  truthVar1 = "yc", truthTarget1 = TRUE,
+                      nm2 ="Test", # model 2
+                      frame2 = test,
+                      xvar2 = "pred", truthVar2 = "yc", truthTarget2 = TRUE,
+                      title = "Model performance, training vs test",
+                      estimate_sig = FALSE)
+
+## -----------------------------------------------------------------------------
 WVPlots::PRTPlot(frm, "model", "isValuable", TRUE, title="Example Precision-Recall plot")
 
 ## -----------------------------------------------------------------------------
