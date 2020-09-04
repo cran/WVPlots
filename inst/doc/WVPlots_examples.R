@@ -167,6 +167,23 @@ WVPlots::ROCPlotPair2(nm1 = "Training", # model 1
                       estimate_sig = FALSE)
 
 ## -----------------------------------------------------------------------------
+set.seed(34903490)
+x1 = rnorm(50)
+x2 = rnorm(length(x1))
+x3 = rnorm(length(x1))
+y = 0.2*x2^2 + 0.5*x2 + x1 + rnorm(length(x1))
+frm_m = data.frame(
+   x1 = x1,
+   x2 = x2,
+   x3 = x3,
+   yC = y >= as.numeric(quantile(y,probs=0.8)))
+WVPlots::ROCPlotPairList(
+   frame = frm_m,
+   xvar_names = c("x1", "x2", "x3"),
+   truthVar = "yC", truthTarget = TRUE,
+   title = "Example ROC list plot")
+
+## -----------------------------------------------------------------------------
 WVPlots::PRTPlot(frm, "model", "isValuable", TRUE, title="Example Precision-Recall plot")
 
 ## -----------------------------------------------------------------------------
