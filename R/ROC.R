@@ -1,5 +1,7 @@
 
 
+#' @importFrom wrapr unpack
+NULL
 
 
 novelPointPositionsL <- function(x) {
@@ -35,44 +37,26 @@ novelPointPositionsR <- function(x) {
 #' x = rnorm(50)
 #' y = 0.5*x^2 + 2*x + rnorm(length(x))
 #' frm = data.frame(x=x,yC=y>=as.numeric(quantile(y,probs=0.8)))
-#' WVPlots::graphROC(frm$x, frm$yC, estimate_sig = TRUE)
+#' WVPlots:::graphROC(frm$x, frm$yC)
 #'
 #' @noRd
 #'
 graphROC <- function(modelPredictions, yValues) {
-  if(!is.numeric(modelPredictions)) {
-    stop("WVPlots::graphROC modelPredictions must be numeric")
-  }
-  if(!is.logical(yValues)) {
-    stop("WVPlots::graphROC yValues must be logical")
-  }
-  if(length(modelPredictions)!=length(yValues)) {
-    stop("WVPlots::graphROC must have length(modelPredictions)==length(yValues)")
-  }
-  ord <- order(modelPredictions, decreasing=TRUE)
-  yValues <- yValues[ord]
-  modelPredictions <- modelPredictions[ord]
-  # FPR is the x-axis, TPR the y.
-  x <- cumsum(!yValues)/max(1,sum(!yValues)) # FPR = x-axis
-  y <- cumsum(yValues)/max(1,sum(yValues))   # TPR = y-axis
-  # each point should be fully after a bunch of points or fully before a
-  # decision level. remove dups to achieve this.
-  dup <- c(modelPredictions[-1]>=modelPredictions[-length(modelPredictions)],
-           FALSE)
-  # And add in ideal endpoints just in case (redundancy here is not a problem).
-  x <- x[!dup]
-  y <- y[!dup]
-  prediction <- modelPredictions[!dup]
-  pointGraph <- data.frame(FalsePositiveRate= x,
-                           TruePositiveRate= y,
-                           model= prediction,
+  positive_prevalence <- mean(yValues, na.rm = TRUE)
+  roc <- build_ROC_curve(
+    modelPredictions = modelPredictions,
+    yValues = yValues,
+    yTarget = TRUE,
+    na.rm = TRUE)
+  roc <- add_ROC_derived_columns(roc, positive_prevalence)
+  pointGraph <- data.frame(FalsePositiveRate= roc$FalsePositiveRate,
+                           TruePositiveRate= roc$TruePositiveRate,
+                           model= roc$Score,
                            stringsAsFactors = FALSE)
-  x <- c(0,x,1)
-  y <- c(0,y,1)
-  prediction <- c(0,prediction,1)
-  lineGraph <- data.frame(FalsePositiveRate= x,
-                          TruePositiveRate= y,
-                          model= prediction,
+  pointGraph <- pointGraph[!is.na(pointGraph$model), , drop = FALSE]
+  lineGraph <- data.frame(FalsePositiveRate= roc$FalsePositiveRate,
+                          TruePositiveRate= roc$TruePositiveRate,
+                          model= roc$Score,
                           stringsAsFactors = FALSE)
   # further de-dup points
   # care about changes in x or y
@@ -85,8 +69,9 @@ graphROC <- function(modelPredictions, yValues) {
   lineGraph <- lineGraph[goodLineRows, , drop=FALSE]
   list(lineGraph=lineGraph,
        pointGraph=pointGraph,
-       area=sigr::calcAUC(modelPredictions,yValues))
+       area=calcAUC(modelPredictions,yValues))
 }
+
 
 #' Plot receiver operating characteristic plot.
 #'
@@ -109,16 +94,45 @@ graphROC <- function(modelPredictions, yValues) {
 #' @param curve_color color of the ROC curve
 #' @param fill_color shading color for the area under the curve
 #' @param diag_color color for the AUC=0.5 line (x=y)
+#' @param add_beta1_ideal_curve logical, if TRUE add the beta(1, a), beta(b, 2) ideal curve defined in \url{https://journals.sagepub.com/doi/abs/10.1177/0272989X15582210}
+#' @param beta1_ideal_curve_color color for ideal curve.
+#' @param add_symmetric_ideal_curve logical, if TRUE add the ideal curve as discussed in \url{https://win-vector.com/2020/09/13/why-working-with-auc-is-more-powerful-than-one-might-think/}.
+#' @param symmetric_ideal_curve_color color for ideal curve.
 #'
 #' @seealso \code{\link{PRTPlot}}, \code{\link{ThresholdPlot}}
 #'
 #' @examples
 #'
-#' set.seed(34903490)
-#' x = rnorm(50)
-#' y = 0.5*x^2 + 2*x + rnorm(length(x))
-#' frm = data.frame(x=x,yC=y>=as.numeric(quantile(y,probs=0.8)))
-#' WVPlots::ROCPlot(frm, "x", "yC", TRUE, title="Example ROC plot", estimate_sig = TRUE)
+#' beta_example <- function(
+#'   n,
+#'   shape1_pos, shape2_pos,
+#'   shape1_neg, shape2_neg) {
+#'   d <- data.frame(
+#'     y = sample(
+#'       c(TRUE, FALSE),
+#'       size = n,
+#'       replace = TRUE),
+#'     score = 0.0
+#'   )
+#'   d$score[d$y] <- rbeta(sum(d$y), shape1 = shape1_pos, shape2 = shape2_pos)
+#'   d$score[!d$y] <- rbeta(sum(!d$y), shape1 = shape1_neg, shape2 = shape2_neg)
+#'   d
+#' }
+#'
+#' d1 <- beta_example(
+#'   100,
+#'   shape1_pos = 6,
+#'   shape2_pos = 6,
+#'   shape1_neg = 1,
+#'   shape2_neg = 2)
+#'
+#' ROCPlot(
+#'    d1,
+#'    xvar = "score",
+#'    truthVar = "y", truthTarget = TRUE,
+#'    title="Example ROC plot",
+#'    estimate_sig = TRUE,
+#'    add_beta1_ideal_curve = TRUE)
 #'
 #' @export
 ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
@@ -129,7 +143,11 @@ ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
                     parallelCluster = NULL,
                     curve_color='darkblue',
                     fill_color='black',
-                    diag_color='black') {
+                    diag_color='black',
+                    add_beta1_ideal_curve = FALSE,
+                    beta1_ideal_curve_color = "DarkRed",
+                    add_symmetric_ideal_curve = FALSE,
+                    symmetric_ideal_curve_color = "Orange") {
   # check and narrow frame
   frame <- check_frame_args_list(...,
                                  frame = frame,
@@ -149,7 +167,7 @@ ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
   if(estimate_sig) {
     aucsig <- sigr::permutationScoreModel(modelValues=predcol,
                                           yValues=outcol,
-                                          scoreFn=sigr::calcAUC,
+                                          scoreFn=calcAUC,
                                           returnScores=returnScores,
                                           nRep=nrep,
                                           parallelCluster=parallelCluster)
@@ -188,6 +206,42 @@ ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
     ggplot2::ylim(0,1) + ggplot2::xlim(0,1) +
     ggplot2::ylab('TruePositiveRate (Sensitivity)') +
     ggplot2::xlab('FalsePositiveRate (1 - Specificity)')
+  if(add_beta1_ideal_curve) {
+    shape1 <- shape1_neg <- shape1_pos <- shape2 <- shape2_neg <- shape2_pos <- NULL  # don't look unbound
+    unpack[shape1_pos = shape1, shape2_pos = shape2] <-
+      fit_beta_shapes(predcol[outcol])
+    unpack[shape1_neg = shape1, shape2_neg = shape2] <-
+      fit_beta_shapes(predcol[!outcol])
+    ideal_roc <- sensitivity_and_specificity_s12p12n(
+      seq(0, 1, 0.1),
+      shape1_pos = shape1_pos,
+      shape1_neg = shape1_neg,
+      shape2_pos = shape2_pos,
+      shape2_neg = shape2_neg)
+    plot <- plot +
+      ggplot2::geom_line(
+        data = ideal_roc,
+        mapping = ggplot2::aes(x = 1 - Specificity, y = Sensitivity),
+        color = beta1_ideal_curve_color,
+        alpha = 0.8,
+        linetype = 2)
+  }
+  if(add_symmetric_ideal_curve) {
+    # add in an ideal AUC curve with same area
+    # From: https://win-vector.com/2020/09/13/why-working-with-auc-is-more-powerful-than-one-might-think/
+    q <- find_AUC_q(frame[[xvar]], frame[[truthVar]] == truthTarget)
+    ideal_roc <- data.frame(Specificity = seq(0, 1, length.out = 101))
+    ideal_roc$Sensitivity <- sensitivity_from_specificity_q(ideal_roc$Specificity, q)  # TODO: move back to sigr
+    Specificity <- NULL  # don't look unbound
+    Sensitivity <- NULL  # don't look unbound
+    plot <- plot +
+      ggplot2::geom_line(
+         data = ideal_roc,
+         mapping = ggplot2::aes(x = 1 - Specificity, y = Sensitivity),
+         color = symmetric_ideal_curve_color,
+         alpha = 0.8,
+         linetype = 2)
+  }
   if(returnScores) {
     return(list(plot=plot,rocList=rocList,aucsig=aucsig,pString=pString))
   }
@@ -266,7 +320,7 @@ ROCPlotPair <- function(frame, xvar1, xvar2, truthVar, truthTarget, title,
     aucsig <- sigr::resampleScoreModelPair(frame[[xvar1]],
                                            frame[[xvar2]],
                                            frame[[truthVar]]==truthTarget,
-                                           scoreFn=sigr::calcAUC,
+                                           scoreFn=calcAUC,
                                            returnScores=returnScores,
                                            nRep=nrep,
                                            parallelCluster=parallelCluster)
@@ -341,7 +395,7 @@ ROCPlotPair <- function(frame, xvar1, xvar2, truthVar, truthTarget, title,
 #' @param ...  no unnamed argument, added to force named binding of later arguments.
 #' @param palette name of a brewer palette (NULL for ggplot2 default coloring)
 #'
-#' @seealso \code{\link{ROCPlot}}, \code{\link{ROCPlotPair}}, , \code{\link{ROCPlotPair2}}
+#' @seealso \code{\link{ROCPlot}}, \code{\link{ROCPlotPair}}, \code{\link{ROCPlotPair2}}
 #'
 #' @examples
 #'
@@ -355,14 +409,14 @@ ROCPlotPair <- function(frame, xvar1, xvar2, truthVar, truthTarget, title,
 #'    x2 = x2,
 #'    x3 = x3,
 #'    yC = y >= as.numeric(quantile(y,probs=0.8)))
-#' WVPlots::ROCPlotPairList(
+#' WVPlots::ROCPlotList(
 #'    frame = frm,
 #'    xvar_names = c("x1", "x2", "x3"),
 #'    truthVar = "yC", truthTarget = TRUE,
 #'    title = "Example ROC list plot")
 #'
 #' @export
-ROCPlotPairList <- function(
+ROCPlotList <- function(
   frame, xvar_names, truthVar, truthTarget, title,
   ...,
   palette="Dark2") {
@@ -431,6 +485,10 @@ ROCPlotPairList <- function(
     ggplot2::xlab('FalsePositiveRate (1 - Specificity)')
   plot
 }
+
+#' @export
+#' @rdname ROCPlotList
+ROCPlotPairList <- ROCPlotList
 
 
 #' Compare two ROC plots.
@@ -638,7 +696,7 @@ plotlyROC <- function(d, predCol, outcomeCol, outcomeTarget, title,
   if(estimate_sig) {
     aucsig <- sigr::permutationScoreModel(modelValues=prediction,
                                           yValues=outcome,
-                                          scoreFn=sigr::calcAUC,
+                                          scoreFn=calcAUC,
                                           returnScores=returnScores,
                                           nRep=nrep,
                                           parallelCluster=parallelCluster)
