@@ -43,12 +43,12 @@ novelPointPositionsR <- function(x) {
 #'
 graphROC <- function(modelPredictions, yValues) {
   positive_prevalence <- mean(yValues, na.rm = TRUE)
-  roc <- build_ROC_curve(
+  roc <- sigr::build_ROC_curve(
     modelPredictions = modelPredictions,
     yValues = yValues,
     yTarget = TRUE,
     na.rm = TRUE)
-  roc <- add_ROC_derived_columns(roc, positive_prevalence)
+  roc <- sigr::add_ROC_derived_columns(roc, positive_prevalence)
   pointGraph <- data.frame(FalsePositiveRate= roc$FalsePositiveRate,
                            TruePositiveRate= roc$TruePositiveRate,
                            model= roc$Score,
@@ -69,8 +69,10 @@ graphROC <- function(modelPredictions, yValues) {
   lineGraph <- lineGraph[goodLineRows, , drop=FALSE]
   list(lineGraph=lineGraph,
        pointGraph=pointGraph,
-       area=calcAUC(modelPredictions,yValues))
+       area=sigr::calcAUC(modelPredictions,yValues))
 }
+
+
 
 
 #' Plot receiver operating characteristic plot.
@@ -94,6 +96,8 @@ graphROC <- function(modelPredictions, yValues) {
 #' @param curve_color color of the ROC curve
 #' @param fill_color shading color for the area under the curve
 #' @param diag_color color for the AUC=0.5 line (x=y)
+#' @param add_beta_ideal_curve logical, if TRUE add the beta(a, b), beta(c, d) ideal curve found by moment matching.
+#' @param beta_ideal_curve_color color for ideal curve.
 #' @param add_beta1_ideal_curve logical, if TRUE add the beta(1, a), beta(b, 2) ideal curve defined in \url{https://journals.sagepub.com/doi/abs/10.1177/0272989X15582210}
 #' @param beta1_ideal_curve_color color for ideal curve.
 #' @param add_symmetric_ideal_curve logical, if TRUE add the ideal curve as discussed in \url{https://win-vector.com/2020/09/13/why-working-with-auc-is-more-powerful-than-one-might-think/}.
@@ -122,7 +126,7 @@ graphROC <- function(modelPredictions, yValues) {
 #' d1 <- beta_example(
 #'   100,
 #'   shape1_pos = 6,
-#'   shape2_pos = 6,
+#'   shape2_pos = 5,
 #'   shape1_neg = 1,
 #'   shape2_neg = 2)
 #'
@@ -132,7 +136,7 @@ graphROC <- function(modelPredictions, yValues) {
 #'    truthVar = "y", truthTarget = TRUE,
 #'    title="Example ROC plot",
 #'    estimate_sig = TRUE,
-#'    add_beta1_ideal_curve = TRUE)
+#'    add_beta_ideal_curve = TRUE)
 #'
 #' @export
 ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
@@ -144,10 +148,12 @@ ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
                     curve_color='darkblue',
                     fill_color='black',
                     diag_color='black',
+                    add_beta_ideal_curve = FALSE,
+                    beta_ideal_curve_color = "#fd8d3c",
                     add_beta1_ideal_curve = FALSE,
-                    beta1_ideal_curve_color = "DarkRed",
+                    beta1_ideal_curve_color = "#f03b20",
                     add_symmetric_ideal_curve = FALSE,
-                    symmetric_ideal_curve_color = "Orange") {
+                    symmetric_ideal_curve_color = "#bd0026") {
   # check and narrow frame
   frame <- check_frame_args_list(...,
                                  frame = frame,
@@ -159,7 +165,7 @@ ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
     return(NULL)
   }
   predcol <- frame[[xvar]]
-  rocList <- graphROC(predcol,outcol)
+  rocList <- graphROC(predcol, outcol)
   auc <- rocList$area
   aucsig <- NULL
   pString <- NULL
@@ -167,7 +173,7 @@ ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
   if(estimate_sig) {
     aucsig <- sigr::permutationScoreModel(modelValues=predcol,
                                           yValues=outcol,
-                                          scoreFn=calcAUC,
+                                          scoreFn=sigr::calcAUC,
                                           returnScores=returnScores,
                                           nRep=nrep,
                                           parallelCluster=parallelCluster)
@@ -206,34 +212,53 @@ ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
     ggplot2::ylim(0,1) + ggplot2::xlim(0,1) +
     ggplot2::ylab('TruePositiveRate (Sensitivity)') +
     ggplot2::xlab('FalsePositiveRate (1 - Specificity)')
+  Specificity <- NULL  # don't look unbound
+  Sensitivity <- NULL  # don't look unbound
   if(add_beta1_ideal_curve) {
+    # match the displayed curve
+    a <- b <- NULL  # don't look unbound
+    unpack[a, b] <-
+       sigr::find_ROC_matching_ab1(modelPredictions = predcol, yValues = outcol)
+    # print(paste(a, b))
+    ideal_roc <- sigr::sensitivity_and_specificity_s12p12n(
+      seq(0, 1, 0.01),
+      shape1_pos = a,
+      shape2_pos = 1,
+      shape1_neg = 1,
+      shape2_neg = b)
+    plot <- plot +
+      ggplot2::geom_line(
+        data = ideal_roc,
+        mapping = ggplot2::aes(x = 1 - Specificity, y = Sensitivity),
+        color = beta_ideal_curve_color,
+        alpha = 0.8,
+        linetype = 2)
+  }
+  if(add_beta_ideal_curve) {
+    # fit by moment matching
     shape1 <- shape1_neg <- shape1_pos <- shape2 <- shape2_neg <- shape2_pos <- NULL  # don't look unbound
-    unpack[shape1_pos = shape1, shape2_pos = shape2] <-
-      fit_beta_shapes(predcol[outcol])
-    unpack[shape1_neg = shape1, shape2_neg = shape2] <-
-      fit_beta_shapes(predcol[!outcol])
-    ideal_roc <- sensitivity_and_specificity_s12p12n(
-      seq(0, 1, 0.1),
+    unpack[shape1_pos, shape2_pos, shape1_neg, shape2_neg] <-
+      sigr::find_ROC_matching_ab(modelPredictions = predcol, yValues = outcol)
+    ideal_roc <- sigr::sensitivity_and_specificity_s12p12n(
+      seq(0, 1, 0.01),
       shape1_pos = shape1_pos,
-      shape1_neg = shape1_neg,
       shape2_pos = shape2_pos,
+      shape1_neg = shape1_neg,
       shape2_neg = shape2_neg)
     plot <- plot +
       ggplot2::geom_line(
         data = ideal_roc,
         mapping = ggplot2::aes(x = 1 - Specificity, y = Sensitivity),
-        color = beta1_ideal_curve_color,
+        color = beta_ideal_curve_color,
         alpha = 0.8,
         linetype = 2)
   }
   if(add_symmetric_ideal_curve) {
     # add in an ideal AUC curve with same area
     # From: https://win-vector.com/2020/09/13/why-working-with-auc-is-more-powerful-than-one-might-think/
-    q <- find_AUC_q(frame[[xvar]], frame[[truthVar]] == truthTarget)
+    q <- sigr::find_AUC_q(frame[[xvar]], frame[[truthVar]] == truthTarget)
     ideal_roc <- data.frame(Specificity = seq(0, 1, length.out = 101))
-    ideal_roc$Sensitivity <- sensitivity_from_specificity_q(ideal_roc$Specificity, q)  # TODO: move back to sigr
-    Specificity <- NULL  # don't look unbound
-    Sensitivity <- NULL  # don't look unbound
+    ideal_roc$Sensitivity <- sigr::sensitivity_from_specificity_q(ideal_roc$Specificity, q)  # TODO: move back to sigr
     plot <- plot +
       ggplot2::geom_line(
          data = ideal_roc,
@@ -320,7 +345,7 @@ ROCPlotPair <- function(frame, xvar1, xvar2, truthVar, truthTarget, title,
     aucsig <- sigr::resampleScoreModelPair(frame[[xvar1]],
                                            frame[[xvar2]],
                                            frame[[truthVar]]==truthTarget,
-                                           scoreFn=calcAUC,
+                                           scoreFn=sigr::calcAUC,
                                            returnScores=returnScores,
                                            nRep=nrep,
                                            parallelCluster=parallelCluster)
@@ -489,6 +514,10 @@ ROCPlotList <- function(
 #' @export
 #' @rdname ROCPlotList
 ROCPlotPairList <- ROCPlotList
+
+#' @export
+#' @rdname ROCPlotList
+ROCListPlot <- ROCPlotList
 
 
 #' Compare two ROC plots.
@@ -696,7 +725,7 @@ plotlyROC <- function(d, predCol, outcomeCol, outcomeTarget, title,
   if(estimate_sig) {
     aucsig <- sigr::permutationScoreModel(modelValues=prediction,
                                           yValues=outcome,
-                                          scoreFn=calcAUC,
+                                          scoreFn=sigr::calcAUC,
                                           returnScores=returnScores,
                                           nRep=nrep,
                                           parallelCluster=parallelCluster)

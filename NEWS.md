@@ -1,4 +1,12 @@
 
+# WVPlots 1.3.0 2020-10-03
+
+ * Fix ROC smoothing doc.
+ * Add more paramteric ROC fitters.
+ * Move back to sigr for ROC fitting.
+ * More curves on lift plot.
+ * Add some aliases.
+
 # WVPlots 1.2.9 2020-09-19
 
  * Add ideal curve to ROC plot, see: https://win-vector.com/2020/09/13/why-working-with-auc-is-more-powerful-than-one-might-think/
