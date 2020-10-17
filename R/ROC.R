@@ -73,6 +73,8 @@ graphROC <- function(modelPredictions, yValues) {
 }
 
 
+#' @importFrom grDevices chull
+NULL
 
 
 #' Plot receiver operating characteristic plot.
@@ -102,6 +104,9 @@ graphROC <- function(modelPredictions, yValues) {
 #' @param beta1_ideal_curve_color color for ideal curve.
 #' @param add_symmetric_ideal_curve logical, if TRUE add the ideal curve as discussed in \url{https://win-vector.com/2020/09/13/why-working-with-auc-is-more-powerful-than-one-might-think/}.
 #' @param symmetric_ideal_curve_color color for ideal curve.
+#' @param add_convex_hull logical, if TRUE add convex hull to plot
+#' @param convex_hull_color color for convex hull curve
+#' @param ideal_plot_step_size step size used in ideal plots
 #'
 #' @seealso \code{\link{PRTPlot}}, \code{\link{ThresholdPlot}}
 #'
@@ -136,7 +141,8 @@ graphROC <- function(modelPredictions, yValues) {
 #'    truthVar = "y", truthTarget = TRUE,
 #'    title="Example ROC plot",
 #'    estimate_sig = TRUE,
-#'    add_beta_ideal_curve = TRUE)
+#'    add_beta_ideal_curve = TRUE,
+#'    add_convex_hull = TRUE)
 #'
 #' @export
 ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
@@ -153,7 +159,10 @@ ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
                     add_beta1_ideal_curve = FALSE,
                     beta1_ideal_curve_color = "#f03b20",
                     add_symmetric_ideal_curve = FALSE,
-                    symmetric_ideal_curve_color = "#bd0026") {
+                    symmetric_ideal_curve_color = "#bd0026",
+                    add_convex_hull = FALSE,
+                    convex_hull_color = "#404040",
+                    ideal_plot_step_size = 0.001) {
   # check and narrow frame
   frame <- check_frame_args_list(...,
                                  frame = frame,
@@ -221,7 +230,7 @@ ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
        sigr::find_ROC_matching_ab1(modelPredictions = predcol, yValues = outcol)
     # print(paste(a, b))
     ideal_roc <- sigr::sensitivity_and_specificity_s12p12n(
-      seq(0, 1, 0.01),
+      seq(0, 1, by = ideal_plot_step_size),
       shape1_pos = a,
       shape2_pos = 1,
       shape1_neg = 1,
@@ -240,7 +249,7 @@ ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
     unpack[shape1_pos, shape2_pos, shape1_neg, shape2_neg] <-
       sigr::find_ROC_matching_ab(modelPredictions = predcol, yValues = outcol)
     ideal_roc <- sigr::sensitivity_and_specificity_s12p12n(
-      seq(0, 1, 0.01),
+      seq(0, 1, by = ideal_plot_step_size),
       shape1_pos = shape1_pos,
       shape2_pos = shape2_pos,
       shape1_neg = shape1_neg,
@@ -257,7 +266,7 @@ ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
     # add in an ideal AUC curve with same area
     # From: https://win-vector.com/2020/09/13/why-working-with-auc-is-more-powerful-than-one-might-think/
     q <- sigr::find_AUC_q(frame[[xvar]], frame[[truthVar]] == truthTarget)
-    ideal_roc <- data.frame(Specificity = seq(0, 1, length.out = 101))
+    ideal_roc <- data.frame(Specificity = seq(0, 1, by = ideal_plot_step_size))
     ideal_roc$Sensitivity <- sigr::sensitivity_from_specificity_q(ideal_roc$Specificity, q)  # TODO: move back to sigr
     plot <- plot +
       ggplot2::geom_line(
@@ -266,6 +275,25 @@ ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
          color = symmetric_ideal_curve_color,
          alpha = 0.8,
          linetype = 2)
+  }
+  if(add_convex_hull) {
+    FalsePositiveRate <- TruePositiveRate <- NULL # don't look unbound
+    ch_frm <- rocList$pointGraph[ , c('FalsePositiveRate', 'TruePositiveRate')]
+    ch_frm <- rbind(
+      data.frame(FalsePositiveRate = 0, TruePositiveRate = 0),
+      ch_frm,
+      data.frame(FalsePositiveRate = c(1, 1), TruePositiveRate = c(1, 0)))
+    ch_idxs <- grDevices::chull(x = ch_frm$FalsePositiveRate,
+                                y = ch_frm$TruePositiveRate)
+    pts <- ch_frm[sort(unique(ch_idxs)), ]
+    pts <- pts[-nrow(pts), ]
+    plot <- plot +
+      ggplot2::geom_line(
+        data = pts,
+        mapping = ggplot2::aes(x = FalsePositiveRate, y = TruePositiveRate),
+        color = convex_hull_color,
+        alpha = 0.75,
+        linetype = 3)
   }
   if(returnScores) {
     return(list(plot=plot,rocList=rocList,aucsig=aucsig,pString=pString))

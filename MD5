@@ -1,6 +1,6 @@
-da33cf870cac47b0077cb94abefe2861 *DESCRIPTION
-2b1d2570cf3e07f673dc7dfc44e60274 *NAMESPACE
-b793f999a93d5c15d6c5f163e39905f1 *NEWS.md
+a6a51cf1b1add40a01378cce6166a563 *DESCRIPTION
+9e3a1a0d91158980970097bc1389727f *NAMESPACE
+82548b526f083148e796c0a65a0f35fd *NEWS.md
 3e8fb26b39d76d954a043377c067e6ff *R/BinaryYScatterPlot.R
 e442a1b8b30a268eb4c474a209f84077 *R/ClevelandDotPlot.R
 7a1e9d14fc7e5a7f0f88ed2cd29cd10d *R/ConditionalSmoothedScatterPlot.R
@@ -17,7 +17,7 @@ cce91029b4fcff659c5eb317eb79b0e4 *R/PRPlot.R
 0ce7d895aff3af0bb53f5ab734998a33 *R/PRTPlot.R
 463444db99b3c63c22e120594462fd3e *R/PairPlot.R
 663473b4e7a802a70c7149c1501ddbbf *R/PlotDistCountBinomial.R
-7993d97e77a0e2b6e251ea6561985b53 *R/ROC.R
+c4b98e7e4d21102ea9c64f987d61cb31 *R/ROC.R
 7a80a6a05eaa6aaf751bf2c1f184b5b0 *R/ScatterBoxPlot.R
 75ce943ff3ad2d7995e4154428a69e33 *R/ScatterHist.R
 d9f01c1070371845aa6feaddf5797933 *R/ScatterHistC.R
@@ -27,7 +27,6 @@ fa47b3a3d40150e9950415e36523def3 *R/ShadowPlot.R
 072f324477a8f2866c1b475533f441e4 *R/ThresholdPlot.R
 ba225e7a677f3d37af4705763bc449ff *R/WVPlots.R
 69401d891405d254e34085409ccd3cf4 *R/rqdatatable_imports.R
-8c395b7e26e26b871410edae0bac417b *R/run_WVPlots_tests.R
 2cd60522406a85557a32e6d0ebe1305e *R/sharedFunctions.R
 2f6e41b5cf72513d332d20e3f382541e *R/wv_gapply.R
 c03f67d298bbdf048897e23777238814 *R/zzz.R
@@ -35,11 +34,11 @@ c03f67d298bbdf048897e23777238814 *R/zzz.R
 0edaf94084375f0d15ecf209093358d8 *build/vignette.rds
 4db2c03eb4e2606ed13b2451092a801e *inst/doc/WVPlots_concept.R
 b9670fecd1113ab9c0d229c6a1f10855 *inst/doc/WVPlots_concept.Rmd
-0e8b8e822bbdee007a6a11eab9537616 *inst/doc/WVPlots_concept.html
+bea42a89803ea50f5fedd09708222e88 *inst/doc/WVPlots_concept.html
 d68bab1ffa4571d4b5dd497115b7e983 *inst/doc/WVPlots_examples.R
 f0360bc13e286f74de84d6c93b06cb35 *inst/doc/WVPlots_examples.Rmd
-a317b4058f8c1e2afc40e03c2f8e4235 *inst/doc/WVPlots_examples.html
-ce52083ffbb9e8fcb38a01e7fad69f98 *inst/unit_tests/test_All.R
+06ccc466a384b120806caccb01e14128 *inst/doc/WVPlots_examples.html
+c7aa8d39ef9d0b476fc4b11c0d537636 *inst/tinytest/test_All.R
 57fcd4a2f2f5927072dd3e22992ca136 *man/BinaryYScatterPlot.Rd
 1305ea019e92b2a2ee6c93ab7ea67719 *man/ClevelandDotPlot.Rd
 7ee3d382e500878a45107e7922963cff *man/ConditionalSmoothedScatterPlot.Rd
@@ -63,7 +62,7 @@ bedbcde53e61f4045a3e402c9403041e *man/MetricPairPlot.Rd
 88979ad3e35e05a9a082fcf8ebe9946f *man/PlotDistDensityBeta.Rd
 68511e14ddcd365a008404340ffe7e64 *man/PlotDistDensityNormal.Rd
 2c027e38a3718b4f7a7f11a367bd540d *man/PlotDistHistBeta.Rd
-4faae5a158a9bc453456db5aad8a1d02 *man/ROCPlot.Rd
+dc7ec7f779ea00a73047fe1e815e256e *man/ROCPlot.Rd
 767230455103df6deb2b840be1675d6b *man/ROCPlotList.Rd
 0f06a59049b29c13a03da184b188fd70 *man/ROCPlotPair.Rd
 98cc521aca9f629dae5d1944a8cbc30e *man/ROCPlotPair2.Rd
@@ -81,8 +80,7 @@ ef6fb595c9ad0c3ee01cafa65d44c942 *man/ScatterHistC.Rd
 0cdb53a86b7d09eb79fbf53c67856f0b *man/plot_Keras_fit_trajectory.Rd
 2ff529a02b3b94e6ad678a957c71c93c *man/plot_fit_trajectory.Rd
 ade9792bd2f7e6ce20a8dc494a6b4157 *man/plotlyROC.Rd
-3de4166256ba4026e7c2ada6dea4bd99 *man/run_WVPlots_tests.Rd
-8a0c72be8d07310c35ec9c2e7ed85d53 *tests/package_test_runner.R
+f68008776ff6e629190de2ea894f1835 *tests/tinytest.R
 42b518ff33b91a0c47e97d89cdd3af6f *tools/WVPlots.png
 b9670fecd1113ab9c0d229c6a1f10855 *vignettes/WVPlots_concept.Rmd
 f0360bc13e286f74de84d6c93b06cb35 *vignettes/WVPlots_examples.Rmd

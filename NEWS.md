@@ -1,4 +1,10 @@
 
+# WVPlots 1.3.1 2020-10-17
+
+ * More control on ideal ROC curve plots.
+ * Convex hull on ROC plot.
+ * Move to tinytest.
+
 # WVPlots 1.3.0 2020-10-03
 
  * Fix ROC smoothing doc.
