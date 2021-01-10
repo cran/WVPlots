@@ -8,12 +8,13 @@ ConditionalSmoothedScatterPlot(
   frame,
   xvar,
   yvar,
-  groupvar,
-  title,
+  groupvar = NULL,
+  title = "ConditionalSmoothedScatterPlot",
   ...,
   k = 3,
   align = "center",
   point_color = "black",
+  point_alpha = 0.2,
   smooth_color = "black",
   palette = "Dark2"
 )
@@ -35,7 +36,9 @@ ConditionalSmoothedScatterPlot(
 
 \item{align}{smoothing window alignment: 'center', 'left', or 'right'. Defaults to 'center'}
 
-\item{point_color}{color of points, when groupvar is NULL}
+\item{point_color}{color of points, when groupvar is NULL. Set to NULL to turn off points.}
+
+\item{point_alpha}{alpha/opaqueness of points.}
 
 \item{smooth_color}{color of smoothing line, when groupvar is NULL}
 
@@ -58,7 +61,7 @@ y = c(1,2,3,4,5,10,15,18,20,25)
 x = seq_len(length(y))
 df = data.frame(x=x, y=y, group=x>5)
 WVPlots::ConditionalSmoothedScatterPlot(df, "x", "y", NULL,
-   title="left smooth, one groups", align="left")
+   title="left smooth, one group", align="left")
 WVPlots::ConditionalSmoothedScatterPlot(df, "x", "y", "group",
    title="left smooth, two groups", align="left")
 

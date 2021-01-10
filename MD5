@@ -1,9 +1,9 @@
-a6a51cf1b1add40a01378cce6166a563 *DESCRIPTION
+507b0a96a72aa69406e6e5a168190a2f *DESCRIPTION
 9e3a1a0d91158980970097bc1389727f *NAMESPACE
-82548b526f083148e796c0a65a0f35fd *NEWS.md
+cb836bf6483a02554889e85d382b1494 *NEWS.md
 3e8fb26b39d76d954a043377c067e6ff *R/BinaryYScatterPlot.R
 e442a1b8b30a268eb4c474a209f84077 *R/ClevelandDotPlot.R
-7a1e9d14fc7e5a7f0f88ed2cd29cd10d *R/ConditionalSmoothedScatterPlot.R
+10391ab54c561b2c17788af85bab9b3d *R/ConditionalSmoothedScatterPlot.R
 1db2f5f2e60f8d6d3a5a2a06355743ac *R/DiscreteDistribution.R
 fc5f3fac26d3d8ba7d596b2518ac6c8f *R/DistributionPlot.R
 f1d2e06dfc5cb3fdd9de5c38a0db953b *R/DoubleDensity.R
@@ -24,7 +24,7 @@ d9f01c1070371845aa6feaddf5797933 *R/ScatterHistC.R
 10cc58450912c5b43351e7130d15442a *R/ShadedDensity.R
 c18fa483a7f7a43541f6d04021e5836e *R/ShadowHist.R
 fa47b3a3d40150e9950415e36523def3 *R/ShadowPlot.R
-072f324477a8f2866c1b475533f441e4 *R/ThresholdPlot.R
+d7518fa6a8929eafbf475d6e7fc22bf9 *R/ThresholdPlot.R
 ba225e7a677f3d37af4705763bc449ff *R/WVPlots.R
 69401d891405d254e34085409ccd3cf4 *R/rqdatatable_imports.R
 2cd60522406a85557a32e6d0ebe1305e *R/sharedFunctions.R
@@ -34,14 +34,14 @@ c03f67d298bbdf048897e23777238814 *R/zzz.R
 0edaf94084375f0d15ecf209093358d8 *build/vignette.rds
 4db2c03eb4e2606ed13b2451092a801e *inst/doc/WVPlots_concept.R
 b9670fecd1113ab9c0d229c6a1f10855 *inst/doc/WVPlots_concept.Rmd
-bea42a89803ea50f5fedd09708222e88 *inst/doc/WVPlots_concept.html
+4047054173a66b72e7f8f72e3c5b5beb *inst/doc/WVPlots_concept.html
 d68bab1ffa4571d4b5dd497115b7e983 *inst/doc/WVPlots_examples.R
 f0360bc13e286f74de84d6c93b06cb35 *inst/doc/WVPlots_examples.Rmd
-06ccc466a384b120806caccb01e14128 *inst/doc/WVPlots_examples.html
+f0239adfdc696698a1c3f3355d6db337 *inst/doc/WVPlots_examples.html
 c7aa8d39ef9d0b476fc4b11c0d537636 *inst/tinytest/test_All.R
 57fcd4a2f2f5927072dd3e22992ca136 *man/BinaryYScatterPlot.Rd
 1305ea019e92b2a2ee6c93ab7ea67719 *man/ClevelandDotPlot.Rd
-7ee3d382e500878a45107e7922963cff *man/ConditionalSmoothedScatterPlot.Rd
+56770ddde2e419450394775c3b9bbc54 *man/ConditionalSmoothedScatterPlot.Rd
 dc1346607f95e19e9f470e9e0667bc81 *man/DiscreteDistribution.Rd
 a66f7d9e7147025e27f9f5f8df40df69 *man/DoubleDensityPlot.Rd
 3b62493ffe37fd761be1bc26b5c42157 *man/DoubleHistogramPlot.Rd
@@ -53,7 +53,7 @@ f70e74a76e576dbf9cb3e8632475856d *man/GainCurvePlotWithNotation.Rd
 23d478d624dc06f34cae8ce1b919cddb *man/LiftCurvePlot.Rd
 0a55b0c2f36cf8037ef11ffa1022020b *man/LiftCurvePlotList.Rd
 89c832f933968df013e464ff68e62a45 *man/LogLogPlot.Rd
-bedbcde53e61f4045a3e402c9403041e *man/MetricPairPlot.Rd
+f02a90416368ca7f25e3a6ef3351609e *man/MetricPairPlot.Rd
 53b2363115fb70141460c5dedf384246 *man/PRPlot.Rd
 071b511e5029432ffe366e1d98e485a6 *man/PRTPlot.Rd
 1524d6fcae1dc19d4a04e74f9d2de6ed *man/PairPlot.Rd
@@ -75,7 +75,7 @@ ef6fb595c9ad0c3ee01cafa65d44c942 *man/ScatterHistC.Rd
 6a598ed9f37eaeaa8c463bce89c45e9b *man/ShadedDensityCenter.Rd
 1f5ada5854060f5a68cbfd866239a904 *man/ShadowHist.Rd
 4f8719971bb661eed46271964e65c532 *man/ShadowPlot.Rd
-453e0f26e39cdaa44dae78ecff8809d7 *man/ThresholdPlot.Rd
+bae17d6ee44b90ebeef6adde336fe76f *man/ThresholdPlot.Rd
 89ec0f58db462c51fc81f43a039dcc17 *man/WVPlots.Rd
 0cdb53a86b7d09eb79fbf53c67856f0b *man/plot_Keras_fit_trajectory.Rd
 2ff529a02b3b94e6ad678a957c71c93c *man/plot_fit_trajectory.Rd
