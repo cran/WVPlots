@@ -52,9 +52,13 @@ stemdotstats = function(ycol) {
 #' WVPlots::ClevelandDotPlot(randomDraws, "letter",
 #'   title = "Example Cleveland-style dot plot")
 #'
-#' # Note the use of sort = 0, and that the graph correctly includes counts
+#' # Note the use of sort = 0. Also note that the graph omits counts
 #' # with no occurrences (5, and 7)
 #' WVPlots::ClevelandDotPlot(mtcars, "carb", sort = 0, "Example of counting integer values")
+#'
+#' # For counting integer values while including counts with no occurrences,
+#' # use Discrete Distribution.
+#' WVPlots::DiscreteDistribution(mtcars, "carb", "Better way to count integer values")
 #' @export
 ClevelandDotPlot = function(frm, xvar, title, ...,
                             sort=-1, limit_n = NULL, stem=TRUE,
@@ -94,10 +98,10 @@ ClevelandDotPlot = function(frm, xvar, title, ...,
   }
   frm$count = 1
   if(stem) {
-    p = ggplot2::ggplot(frm, ggplot2::aes_string(x=xvar, y="count")) +
+    p = ggplot2::ggplot(data = frm, mapping = ggplot2::aes(!!!simulate_aes_string(x=xvar, y="count"))) +
       ggplot2::stat_summary(fun.data=stemdotstats, geom="pointrange", color=color)
   } else {
-    p = ggplot2::ggplot(frm, ggplot2::aes_string(x=xvar)) +
+    p = ggplot2::ggplot(data = frm, mapping = ggplot2::aes(!!!simulate_aes_string(x=xvar))) +
       ggplot2::geom_point(stat="count", color=color)
   }
   p + ggplot2::ggtitle(title)

@@ -196,22 +196,24 @@ ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
     aucString <- sprintf('%.2g',auc)
     subtitle <- paste('AUC =', aucString)
   }
+  FalsePositiveRate <- NULL  # don't look unbound in CRAN check
+  TruePositiveRate <- NULL  # don't look unbound in CRAN check
   plot <- ggplot2::ggplot() +
     ggplot2::geom_ribbon(data=rocList$lineGraph,
-                         ggplot2::aes_string(x='FalsePositiveRate',
-                                             ymax='TruePositiveRate',ymin=0),
+                         mapping=ggplot2::aes(x=FalsePositiveRate,
+                                             ymax=TruePositiveRate,ymin=0),
                          alpha=0.2,color=NA, fill=fill_color)
   if(nrow(rocList$pointGraph)<=1000) {
     plot <- plot +
       ggplot2::geom_point(data=rocList$pointGraph,
-                          ggplot2::aes_string(x='FalsePositiveRate',
-                                              y='TruePositiveRate'),
+                          mapping=ggplot2::aes(x=FalsePositiveRate,
+                                              y=TruePositiveRate),
                           color=curve_color, alpha=0.5)
   }
   plot <- plot +
     ggplot2::geom_line(data=rocList$lineGraph,
-                       ggplot2::aes_string(x='FalsePositiveRate',
-                                           y='TruePositiveRate'),
+                       mapping=ggplot2::aes(x=FalsePositiveRate,
+                                           y=TruePositiveRate),
                        color=curve_color) +
     ggplot2::geom_abline(slope=1,intercept=0,color=diag_color) +
     ggplot2::coord_fixed() +
@@ -221,8 +223,8 @@ ROCPlot <- function(frame, xvar, truthVar, truthTarget, title,
     ggplot2::ylim(0,1) + ggplot2::xlim(0,1) +
     ggplot2::ylab('TruePositiveRate (Sensitivity)') +
     ggplot2::xlab('FalsePositiveRate (1 - Specificity)')
-  Specificity <- NULL  # don't look unbound
-  Sensitivity <- NULL  # don't look unbound
+  Specificity <- NULL  # don't look unbound in CRAN check
+  Sensitivity <- NULL  # don't look unbound in CRAN check
   if(add_beta1_ideal_curve) {
     # match the displayed curve
     a <- b <- NULL  # don't look unbound
@@ -356,6 +358,9 @@ ROCPlotPair <- function(frame, xvar1, xvar2, truthVar, truthTarget, title,
                                  title = title,
                                  funname = "WVPlots::ROCPlotPair")
   outcol <- frame[[truthVar]]==truthTarget
+  FalsePositiveRate <- NULL  # don't look unbound in CRAN check
+  TruePositiveRate <- NULL  # don't look unbound in CRAN check
+  model <- NULL  # don't look unbound in CRAN check
   if(length(unique(outcol))!=2) {
     return(NULL)
   }
@@ -396,16 +401,16 @@ ROCPlotPair <- function(frame, xvar1, xvar2, truthVar, truthTarget, title,
   plot <- ggplot2::ggplot()
   if(nrow(pointGraph)<=1000) {
     plot <- plot + ggplot2::geom_point(data=pointGraph,
-                                       ggplot2::aes_string(x='FalsePositiveRate',
-                                                           y='TruePositiveRate',
-                                                           color='model',shape='model'),
+                                       mapping=ggplot2::aes(x=FalsePositiveRate,
+                                                           y=TruePositiveRate,
+                                                           color=model,shape=model),
                                        alpha=0.5)
   }
   plot <- plot +
     ggplot2::geom_line(data=lineGraph,
-                       ggplot2::aes_string(x='FalsePositiveRate',
-                                           y='TruePositiveRate',
-                                           color='model',linetype='model')) +
+                       mapping=ggplot2::aes(x=FalsePositiveRate,
+                                           y=TruePositiveRate,
+                                           color=model,linetype=model)) +
     ggplot2::geom_abline(slope=1,intercept=0,color='gray') +
     ggplot2::coord_fixed()
 
@@ -491,6 +496,11 @@ ROCPlotList <- function(
     function(v) {paste0(v,', AUC=',sprintf('%.2g',rocLists[[v]]$area))}
   )
 
+  FalsePositiveRate <- NULL  # don't look unbound in CRAN check
+  TruePositiveRate <- NULL  # don't look unbound in CRAN check
+  model <- NULL  # don't look unbound in CRAN check
+  dataset <- NULL  # don't look unbound in CRAN check
+
   for(v in xvar_names) {
     rocLists[[v]]$pointGraph$model <- nmList[[v]]
     rocLists[[v]]$lineGraph$model <- nmList[[v]]
@@ -512,16 +522,16 @@ ROCPlotList <- function(
   plot <- ggplot2::ggplot()
   if(nrow(pointGraph)<=1000) {
     plot <- plot + ggplot2::geom_point(data=pointGraph,
-                                       ggplot2::aes_string(x='FalsePositiveRate',
-                                                           y='TruePositiveRate',
-                                                           color='model',shape='model'),
+                                       mapping=ggplot2::aes(x=FalsePositiveRate,
+                                                           y=TruePositiveRate,
+                                                           color=model,shape=model),
                                        alpha=0.5)
   }
   plot <- plot +
     ggplot2::geom_line(data=lineGraph,
-                       ggplot2::aes_string(x='FalsePositiveRate',
-                                           y='TruePositiveRate',
-                                           color='model',linetype='model')) +
+                       mapping=ggplot2::aes(x=FalsePositiveRate,
+                                           y=TruePositiveRate,
+                                           color=model,linetype=model)) +
     ggplot2::geom_abline(slope=1,intercept=0,color='gray') +
     ggplot2::coord_fixed()
 
@@ -611,6 +621,12 @@ ROCPlotPair2 <- function(nm1, frame1, xvar1, truthVar1, truthTarget1,
                                   name_var_list = list(xvar2 = xvar2, truthVar2 = truthVar2),
                                   title = title,
                                   funname = "WVPlots::ROCPlotPair2")
+
+  FalsePositiveRate <- NULL  # don't look unbound in CRAN check
+  TruePositiveRate <- NULL  # don't look unbound in CRAN check
+  model <- NULL  # don't look unbound in CRAN check
+  dataset <- NULL  # don't look unbound in CRAN check
+
   test <- NULL # used as a symbol, declare not an unbound variable
   outcol1 <- frame1[[truthVar1]]==truthTarget1
   if(length(unique(outcol1))!=2) {
@@ -655,16 +671,16 @@ ROCPlotPair2 <- function(nm1, frame1, xvar1, truthVar1, truthTarget1,
   if(nrow(pointGraph)<=1000) {
     plot <- plot +
       ggplot2::geom_point(data=pointGraph,
-                          ggplot2::aes_string(x='FalsePositiveRate',
-                                              y='TruePositiveRate',
-                                              color='dataset',shape='dataset'),
+                          mapping=ggplot2::aes(x=FalsePositiveRate,
+                                              y=TruePositiveRate,
+                                              color=dataset,shape=dataset),
                           alpha=0.5)
   }
   plot <- plot +
     ggplot2::geom_line(data=lineGraph,
-                       ggplot2::aes_string(x='FalsePositiveRate',
-                                           y='TruePositiveRate',
-                                           color='dataset',linetype='dataset')) +
+                       mapping=ggplot2::aes(x=FalsePositiveRate,
+                                           y=TruePositiveRate,
+                                           color=dataset,linetype=dataset)) +
     ggplot2::geom_abline(slope=1,intercept=0,color='gray') +
     ggplot2::coord_fixed()
 
@@ -691,8 +707,6 @@ ROCPlotPair2 <- function(nm1, frame1, xvar1, truthVar1, truthTarget1,
 
 
 
-#' Use \code{plotly} to produce a ROC plot.
-#'
 #' Use \code{plotly} to produce a ROC plot.
 #'
 #' Note: any \code{arrange_} warning is a version incompatibility between \code{plotly} and \code{dplyr}.

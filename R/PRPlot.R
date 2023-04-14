@@ -109,7 +109,8 @@ PRPlot <- function(frame, xvar, truthVar, truthTarget, title,
   isoFrame$Precision <- bestF1*isoFrame$Recall/(2*isoFrame$Recall-bestF1)
   isoFrame <- isoFrame[(isoFrame$Precision<=1) & (isoFrame$Precision>0),]
   #f1check <- 2*isoFrame$Recall*isoFrame$Precision/(isoFrame$Recall+isoFrame$Precision)
-
+  Precision <- NULL  # don't look unbound in CRAN checks
+  Recall <- NULL  # don't look unbound in CRAN checks
   pString <- ''
   if(estimate_sig && requireNamespace('sigr',quietly = TRUE)) {
     sp <- sigr::permutationScoreModel(predcol,outcol,
@@ -124,18 +125,18 @@ PRPlot <- function(frame, xvar, truthVar, truthTarget, title,
   if(nrow(pF1)<1000) {
     plot <- plot +
       ggplot2::geom_point(data=pf,
-                          ggplot2::aes_string(x='Recall',y='Precision'),
+                          mapping=ggplot2::aes(x=Recall, y=Precision),
                           color='darkblue',alpha=0.5)
   }
   plot <- plot +
     ggplot2::geom_point(data=pF1,
-                        ggplot2::aes_string(x='Recall',y='Precision'),
+                        mapping=ggplot2::aes(x=Recall, y=Precision),
                         color='blue',size=2,shape=15) +
     ggplot2::geom_line(data=prList$lineGraph,
-                       ggplot2::aes_string(x='Recall',y='Precision'),
+                       mapping=ggplot2::aes(x=Recall, y=Precision),
                        color='darkblue') +
     ggplot2::geom_line(data=isoFrame,
-                       ggplot2::aes_string(x='Recall',y='Precision'),
+                       mapping=ggplot2::aes(x=Recall, y=Precision),
                        color='blue',alpha=0.5,linetype=2) +
     ggplot2::geom_hline(yintercept=prevalence, linetype=3, alpha=0.2) +
     ggplot2::geom_vline(xintercept=1, linetype=3, alpha=0.2) +
