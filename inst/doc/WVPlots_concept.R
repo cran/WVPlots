@@ -1,5 +1,9 @@
 ## ----echo=FALSE---------------------------------------------------------------
 knitr::opts_chunk$set(fig.width=6, fig.height=6)
+if (requireNamespace('data.table', quietly = TRUE)) {
+	# don't multi-thread during CRAN checks
+	data.table::setDTthreads(1)
+}
 
 ## -----------------------------------------------------------------------------
 set.seed(52523)

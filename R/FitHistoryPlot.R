@@ -1,7 +1,5 @@
 
 
-
-
 #' Plot the trajectory of a model fit.
 #'
 #' Plot a history of model fit performance over the a trajectory of times.
@@ -34,6 +32,11 @@
 #'
 #' @examples
 #'
+#' if (requireNamespace('data.table', quietly = TRUE)) {
+#'		# don't multi-thread during CRAN checks
+#' 		data.table::setDTthreads(1)
+#' }
+#'
 #' d <- data.frame(
 #'   epoch    = c(1,         2,         3,         4,         5),
 #'   val_loss = c(0.3769818, 0.2996994, 0.2963943, 0.2779052, 0.2842501),
@@ -56,7 +59,7 @@
 #'   pick_metric = "minus binary cross entropy",
 #'   discount_rate = 0.1)
 #'
-#' suppressWarnings(print(plt)) # too few points for loess
+#' print(plt)
 #'
 #' @export
 #'
@@ -141,25 +144,16 @@ plot_fit_trajectory <- function(d,
     ggplot2::geom_point(ggplot2::aes(y = training), color=trainCol)
 
   if(draw_ribbon) {
-    plt = plt + ggplot2::stat_smooth(geom = "line",
-                                     se = FALSE,
-                                     color  = valCol,
-                                     alpha = 0.8,
-                                     method = "loess") +
+    plt = plt + ggplot2::geom_line(color  = valCol,
+                                  alpha = 0.8) +
       ggplot2::geom_ribbon(alpha=0.2, fill = trainCol)
     subtitle = NULL
   } else {
-    plt = plt + ggplot2::stat_smooth(geom = "line",
-                                     se = FALSE,
-                                     color  = valCol,
-                                     method = "loess") +
-      ggplot2::stat_smooth(ggplot2::aes(y = training),
-                           geom = "line",
-                           se = FALSE,
+    plt = plt + ggplot2::geom_line(color  = valCol) +
+      ggplot2::geom_line(ggplot2::aes(y = training),
                            color  =  trainCol,
                            alpha = 0.8,
-                           linetype = 3,
-                           method = "loess")
+                           linetype = 3)
     subtitle = "Validation curve solid, training curve dashed"
   }
 
@@ -183,12 +177,10 @@ plot_fit_trajectory <- function(d,
   }
   if(!is.null(discount_rate)) {
     plt <- plt +
-      ggplot2::stat_smooth(geom = "line",
+      ggplot2::geom_line(
                 aes(y = discounted),
-                se = FALSE,
-                color  = valCol,
+                color = valCol,
                 alpha = 0.5,
-                method = "loess",
                 linetype = 2)
   }
   plt
@@ -235,6 +227,11 @@ plot_fit_trajectory <- function(d,
 #'
 #' @examples
 #'
+#' if (requireNamespace('data.table', quietly = TRUE)) {
+#'		# don't multi-thread during CRAN checks
+#' 		data.table::setDTthreads(1)
+#' }
+#'
 #' # example data (from Keras)
 #' d <- data.frame(
 #'   val_loss = c(0.3769818, 0.2996994, 0.2963943, 0.2779052, 0.2842501),
@@ -246,7 +243,7 @@ plot_fit_trajectory <- function(d,
 #'   d,
 #'   title = "model performance by epoch, dataset, and measure")
 #'
-#' suppressWarnings(print(plt)) # too few points for loess
+#' print(plt)
 #'
 #' @export
 #'

@@ -1,7 +1,21 @@
 
-# WVPlots 1.3.3 2021-04-10
+
+# WVPlots 1.3.5 2023-08-09
+
+ * Fix false-positive CRAN checks.
+ * Set data.table threads to 1 in all examples and tests.
+ * Cut down number of examples active.
+
+# WVPlots 1.3.4 2023-08-08
+
+ * Fix docs.
+ * Remove smoother from perf graphs.
+ * ggplot2 API changes.
+
+# WVPlots 1.3.3 2023-04-14
 
  * Documentation fixes.
+ * Work away from aes_string().
 
 # WVPlots 1.3.2 2021-01-04
 
